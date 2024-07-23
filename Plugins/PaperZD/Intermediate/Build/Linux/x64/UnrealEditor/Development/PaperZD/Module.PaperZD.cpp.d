@@ -2480,4 +2480,655 @@
   Runtime/Engine/Classes/Engine/EngineTypes.h \
   /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDComponentReference.generated.h \
   Runtime/CoreUObject/Public/UObject/ObjectMacros.h \
-  Runtime/CoreUObject/Public/UObject/ScriptMacros.h
+  Runtime/CoreUObject/Public/UObject/ScriptMacros.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_Base.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_Base.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/Players/PaperZDAnimationPlaybackData.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/PaperZDAnimSequence.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotify_Base.h \
+  Runtime/Engine/Classes/Components/PrimitiveComponent.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_Base.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimSequence.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_Base.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDAnimBPGeneratedClass.h \
+  Runtime/Engine/Classes/Engine/BlueprintGeneratedClass.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimStateMachine.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimStateMachine.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimBPGeneratedClass.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDAnimInstance.h \
+  Runtime/CoreUObject/Public/UObject/Interface.h \
+  Runtime/CoreUObject/Public/Templates/SubclassOf.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/IPaperZDAnimInstanceManager.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/IPaperZDAnimInstanceManager.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimInstance.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_Base.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_CacheAnimation.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_CacheAnimation.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_CacheAnimation.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_CacheAnimation.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_LayerAnimations.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_LayerAnimations.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_LayerAnimations.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_LayerAnimations.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_OverrideSlot.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_OverrideSlot.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_OverrideSlot.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_OverrideSlot.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_PlaySequence.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_PlaySequence.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_PlaySequence.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/Players/PaperZDAnimPlayer.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimPlayer.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_PlaySequence.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_RandomPlayer.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_RandomPlayer.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_RandomPlayer.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_RandomPlayer.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_SelectByBool.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_SelectByBool.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SelectByBool.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SelectByBool.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_SelectByEnum.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_SelectByEnum.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SelectByEnum.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SelectByEnum.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_SelectByInt.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_SelectByInt.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SelectByInt.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SelectByInt.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_SetDirectionality.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_SetDirectionality.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SetDirectionality.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_SetDirectionality.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_Sink.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_Sink.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_Sink.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_Sink.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_StateMachine.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_StateMachine.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_StateMachine.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_StateMachine.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimNode_UseCachedAnimation.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimNodes/PaperZDAnimNode_UseCachedAnimation.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_UseCachedAnimation.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNode_UseCachedAnimation.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimNodes/PaperZDAnimStateMachine.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimStateMachine.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/PaperZDAnimSequence.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotify.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotifyCustom.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotifyCustom.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/IPaperZDEditorProxy.h \
+  Runtime/Core/Public/Templates/SharedPointer.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDCustomVersion.h \
+  Runtime/Core/Public/Misc/Guid.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimSequence.gen.cpp \
+  Runtime/CoreUObject/Public/Serialization/ArchiveUObjectFromStructuredArchive.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/PaperZDAnimSequence_Flipbook.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/PaperZDAnimSequence_Flipbook.h \
+  ../Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbook.h \
+  ../Plugins/2D/Paper2D/Intermediate/Build/Linux/UnrealEditor/Inc/Paper2D/UHT/PaperFlipbook.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimSequence_Flipbook.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimSequence_Flipbook.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/Players/PaperZDAnimationPlaybackData.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/Players/PaperZDAnimPlayer.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/Players/PaperZDPlaybackHandle.h \
+  Runtime/CoreUObject/Public/UObject/NoExportTypes.h \
+  Runtime/Core/Public/PixelFormat.h \
+  Runtime/Core/Public/Misc/FallbackStruct.h \
+  Runtime/Core/Public/Misc/DateTime.h \
+  Runtime/Core/Public/Misc/Timespan.h \
+  Runtime/CoreUObject/Public/UObject/TopLevelAssetPath.h \
+  Runtime/CoreUObject/Public/UObject/SoftObjectPath.h \
+  Runtime/CoreUObject/Public/UObject/PropertyAccessUtil.h \
+  Runtime/Core/Public/Containers/UnrealString.h \
+  Runtime/Core/Public/CoreGlobals.h Runtime/Core/Public/HAL/Platform.h \
+  Runtime/Core/Public/Misc/EnumClassFlags.h \
+  Runtime/Core/Public/Templates/Function.h \
+  Runtime/Core/Public/Templates/UniquePtr.h \
+  Runtime/Core/Public/UObject/NameTypes.h \
+  Runtime/CoreUObject/Public/UObject/UnrealType.h \
+  Runtime/CoreUObject/Public/Serialization/TestUndeclaredScriptStructObjectReferences.h \
+  Runtime/CoreUObject/Public/UObject/ObjectPtr.h \
+  Runtime/CoreUObject/Public/UObject/SoftObjectPtr.h \
+  Runtime/CoreUObject/Public/UObject/WeakObjectPtr.h \
+  Runtime/Core/Public/Math/InterpCurvePoint.h \
+  Runtime/Core/Public/Math/UnitConversion.h \
+  Runtime/Core/Public/Containers/Array.h Runtime/Core/Public/CoreTypes.h \
+  Runtime/Core/Public/Delegates/Delegate.h \
+  Runtime/Core/Public/Internationalization/Text.h \
+  Runtime/Core/Public/Misc/Optional.h \
+  Runtime/Core/Public/Templates/ValueOrError.h \
+  Runtime/Core/Public/Math/UnitConversion.inl \
+  Runtime/Core/Public/CoreFwd.h Runtime/Core/Public/Misc/OptionalFwd.h \
+  Runtime/Core/Public/Math/Vector.h Runtime/Core/Public/Math/Vector4.h \
+  Runtime/Core/Public/Math/Vector2D.h \
+  Runtime/Core/Public/Math/TwoVectors.h Runtime/Core/Public/Math/Plane.h \
+  Runtime/Core/Public/Math/Rotator.h Runtime/Core/Public/Math/Quat.h \
+  Runtime/Core/Public/Math/IntPoint.h \
+  Runtime/Core/Public/Math/IntVector.h Runtime/Core/Public/Math/Color.h \
+  Runtime/Core/Public/Math/Box.h Runtime/Core/Public/Math/Box2D.h \
+  Runtime/Core/Public/Math/BoxSphereBounds.h \
+  Runtime/Core/Public/Math/OrientedBox.h \
+  Runtime/Core/Public/Math/Matrix.h \
+  Runtime/Core/Public/Math/ScalarRegister.h \
+  Runtime/Core/Public/Math/RandomStream.h \
+  Runtime/Core/Public/Math/RangeBound.h \
+  Runtime/Core/Public/Math/Interval.h Runtime/Core/Public/Math/Sphere.h \
+  Runtime/Core/Public/Internationalization/PolyglotTextData.h \
+  Runtime/Core/Public/Containers/Map.h \
+  Runtime/Core/Public/Internationalization/LocalizedTextSourceTypes.h \
+  Runtime/CoreUObject/Public/AssetRegistry/ARFilter.h \
+  Runtime/CoreUObject/Public/UObject/Class.h \
+  Runtime/CoreUObject/Public/AssetRegistry/AssetBundleData.h \
+  Runtime/CoreUObject/Public/AssetRegistry/AssetData.h \
+  /run/media/M2/Code/UE/Engine/Source/Runtime/CoreUObject/Public/UObject/../../../ApplicationCore/Public/GenericPlatform/ICursor.h \
+  /run/media/M2/Code/UE/Engine/Source/Runtime/CoreUObject/Public/UObject/../../../ApplicationCore/Public/GenericPlatform/IInputInterface.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDPlaybackHandle.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/Sources/PaperZDAnimationSource.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimationSource.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDStats.h \
+  Runtime/Core/Public/Stats/Stats.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimPlayer.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/Players/PaperZDPlaybackHandle.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDPlaybackHandle.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/Players/PaperZDPlaybackHandle_Flipbook.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/Players/PaperZDPlaybackHandle_Flipbook.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDPlaybackHandle_Flipbook.generated.h \
+  ../Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperFlipbookComponent.h \
+  Runtime/Engine/Classes/Components/MeshComponent.h \
+  ../Plugins/2D/Paper2D/Intermediate/Build/Linux/UnrealEditor/Inc/Paper2D/UHT/PaperFlipbookComponent.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDPlaybackHandle_Flipbook.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/Sources/PaperZDAnimationSource.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimationSource.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/AnimSequences/Sources/PaperZDAnimationSource_Flipbook.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/AnimSequences/Sources/PaperZDAnimationSource_Flipbook.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimationSource_Flipbook.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimationSource_Flipbook.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/IPaperZDAnimInstanceManager.cpp \
+  Runtime/Engine/Classes/GameFramework/Actor.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/IPaperZDAnimInstanceManager.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/IPaperZDEditorProxy.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotify.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotifyCustom.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotifyCustom.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotifyState.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotifyState.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotifyState.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotifyState.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotify_Base.cpp \
+  Runtime/CoreUObject/Public/UObject/Package.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_Base.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotify_NiagaraEffect.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotify_NiagaraEffect.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_NiagaraEffect.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraDefines.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraScalabilityState.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraScalabilityState.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraTickBehaviorEnum.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraTickBehaviorEnum.generated.h \
+  Runtime/CoreUObject/Public/Templates/IsUEnumClass.h \
+  Runtime/CoreUObject/Public/UObject/ReflectedTypeAccessors.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraUserRedirectionParameterStore.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraParameterStore.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraTypes.h \
+  Runtime/Core/Public/Misc/SecureHash.h \
+  Runtime/CoreUObject/Public/UObject/GCObject.h \
+  Runtime/Core/Public/Containers/Queue.h \
+  ../Plugins/FX/Niagara/Source/NiagaraCore/Public/NiagaraCore.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/NiagaraCore/UHT/NiagaraCore.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraTypes.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraParameterStore.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraUserRedirectionParameterStore.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraVariant.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraVariant.generated.h \
+  Runtime/Engine/Public/PrimitiveViewRelevance.h \
+  Runtime/Engine/Classes/Particles/ParticlePerfStats.h \
+  Runtime/Core/Public/Templates/Atomic.h \
+  Runtime/Core/Public/HAL/PlatformTime.h \
+  Runtime/Core/Public/ProfilingDebugging/CsvProfiler.h \
+  Runtime/Engine/Classes/Particles/ParticleSystemComponent.h \
+  Runtime/CoreUObject/Public/UObject/Object.h \
+  Runtime/Engine/Classes/Components/SceneComponent.h \
+  Runtime/Engine/Classes/Materials/MaterialInterface.h \
+  Runtime/Engine/Classes/Particles/ParticleSystem.h \
+  Runtime/Core/Public/Async/TaskGraphInterfaces.h \
+  Runtime/RHI/Public/RHIDefinitions.h \
+  Runtime/Engine/Public/PSOPrecache.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/ParticleSystem.generated.h \
+  Runtime/Engine/Classes/Particles/Emitter.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/Emitter.generated.h \
+  Runtime/Launch/Resources/Version.h \
+  Runtime/Engine/Classes/Particles/WorldPSCPool.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/ParticleSystemComponent.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraComponent.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraSystem.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraAssetTagDefinitions.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraAssetTagDefinitions.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraDataSetCompiledData.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraCommon.h \
+  Runtime/Engine/Classes/Engine/EngineBaseTypes.h \
+  Runtime/CoreUObject/Public/UObject/ObjectKey.h \
+  Runtime/CoreUObject/Public/UObject/WeakFieldPtr.h \
+  Runtime/Core/Public/UObject/WeakObjectPtrTemplates.h \
+  Runtime/CoreUObject/Public/UObject/FieldPath.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponentPoolMethodEnum.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraComponentPoolMethodEnum.generated.h \
+  Runtime/Core/Public/Templates/RefCounting.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraCommon.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraDataSetCompiledData.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraDataSetAccessor.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraEffectType.h \
+  Runtime/Engine/Public/InGamePerformanceTracker.h \
+  Runtime/RenderCore/Public/RenderCommandFence.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraPlatformSet.h \
+  Runtime/Core/Public/HAL/IConsoleManager.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraPlatformSet.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraPerfBaseline.h \
+  Runtime/Engine/Classes/Particles/ParticlePerfStatsManager.h \
+  Runtime/RenderCore/Public/RenderingThread.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraPerfBaseline.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraValidationRule.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraValidationRule.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraValidationRuleSet.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraValidationRuleSet.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraEffectType.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraEmitterHandle.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraEmitterHandle.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraMessageStore.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraMessageStore.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraParameterCollection.h \
+  ../Plugins/FX/Niagara/Source/NiagaraCore/Public/NiagaraCompileHash.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/NiagaraCore/UHT/NiagaraCompileHash.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraParameterCollection.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraParameterDefinitionsSubscriber.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraParameterDefinitionsDelegates.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraParameterDefinitionsSubscriber.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Internal/NiagaraSystemEmitterState.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Internal/Stateless/NiagaraStatelessDistribution.h \
+  Runtime/Engine/Classes/Curves/RichCurve.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Internal/Stateless/NiagaraStatelessCommon.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraParameterBinding.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraParameterBinding.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraStatelessDistribution.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraSystemEmitterState.generated.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraSystem.generated.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraFunctionLibrary.h \
+  Runtime/Engine/Classes/Kismet/BlueprintFunctionLibrary.h \
+  ../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponentPool.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraComponentPool.generated.h \
+  Runtime/VectorVM/Public/VectorVM.h \
+  Runtime/Core/Public/Containers/ArrayView.h \
+  Runtime/Core/Public/Misc/AssertionMacros.h \
+  Runtime/Core/Public/Misc/ByteSwap.h \
+  Runtime/Core/Public/Templates/AlignmentTemplates.h \
+  Runtime/VectorVM/Public/VectorVMExperimental.h \
+  Runtime/VectorVM/Public/VectorVMSerialization.h \
+  Runtime/VectorVM/Public/VectorVMCommon.h \
+  ThirdParty/Unix/LibCxx/include/c++/v1/atomic \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/VectorVM/UHT/VectorVMCommon.generated.h \
+  Runtime/VectorVM/Public/VectorVMLegacy.h \
+  Runtime/Core/Public/HAL/ThreadSingleton.h \
+  ../Plugins/FX/Niagara/Intermediate/Build/Linux/UnrealEditor/Inc/Niagara/UHT/NiagaraFunctionLibrary.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_NiagaraEffect.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotify_ParticleEffect.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotify_ParticleEffect.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_ParticleEffect.generated.h \
+  Runtime/Engine/Classes/Kismet/GameplayStatics.h \
+  Runtime/Engine/Public/CollisionQueryParams.h \
+  Runtime/Engine/Classes/Engine/LatentActionManager.h \
+  Runtime/Engine/Classes/GameFramework/PlayerController.h \
+  Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h \
+  Runtime/CoreUObject/Public/UObject/TextProperty.h \
+  Runtime/Engine/Classes/Engine/CollisionProfile.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/KismetSystemLibrary.generated.h \
+  Runtime/Engine/Classes/Sound/DialogueTypes.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/DialogueTypes.generated.h \
+  /run/media/M2/Code/UE/Engine/Source/Runtime/Engine/Classes/Kismet/GameplayStaticsTypes.h \
+  /run/media/M2/Code/UE/Engine/Source/Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h \
+  Runtime/Engine/Classes/Engine/HitResult.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/GameplayStaticsTypes.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/GameplayStatics.generated.h \
+  Runtime/Engine/Public/ParticleHelper.h \
+  Runtime/Core/Public/Containers/IndirectArray.h \
+  Runtime/RHI/Public/RHI.h Runtime/RenderCore/Public/RenderResource.h \
+  Runtime/RenderCore/Public/UniformBuffer.h \
+  Runtime/Engine/Public/PrimitiveSceneProxy.h \
+  Runtime/Engine/Public/MeshBatch.h \
+  Runtime/Engine/Public/MeshParticleVertexFactory.h \
+  Runtime/RenderCore/Public/VertexFactory.h \
+  Runtime/Engine/Public/Components.h \
+  Runtime/Engine/Public/SceneManagement.h \
+  Runtime/Engine/Public/ParticleVertexFactory.h \
+  Runtime/Engine/Public/SceneView.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/ParticleHelper.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_ParticleEffect.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDAnimNotify_PlaySound.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDAnimNotify_PlaySound.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_PlaySound.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZD.h \
+  Runtime/Core/Public/Modules/ModuleManager.h \
+  Runtime/Engine/Classes/Sound/SoundBase.h \
+  Runtime/Engine/Classes/Engine/World.h Runtime/Engine/Public/Audio.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimNotify_PlaySound.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDNotifyState_NiagaraEffect.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDNotifyState_NiagaraEffect.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDNotifyState_NiagaraEffect.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDNotifyState_NiagaraEffect.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Notifies/PaperZDNotifyState_ParticleEffect.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Notifies/PaperZDNotifyState_ParticleEffect.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDNotifyState_ParticleEffect.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDNotifyState_ParticleEffect.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZD.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDAnimationComponent.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDAnimationComponent.h \
+  Runtime/Engine/Classes/Components/ActorComponent.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Sequencer/IPaperZDSequencerSource.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/IPaperZDSequencerSource.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimationComponent.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimationComponent.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDAnimBP.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDAnimBP.h \
+  Runtime/Engine/Classes/Engine/Blueprint.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimBP.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDCharacter.h \
+  ../Plugins/2D/Paper2D/Source/Paper2D/Classes/PaperCharacter.h \
+  Runtime/Engine/Classes/GameFramework/Character.h \
+  Runtime/CoreUObject/Public/UObject/UObjectGlobals.h \
+  Runtime/CoreUObject/Public/UObject/CoreNet.h \
+  Runtime/Engine/Classes/Engine/NetSerialization.h \
+  Runtime/Engine/Classes/GameFramework/Pawn.h \
+  Runtime/Engine/Classes/GameFramework/CharacterMovementReplication.h \
+  Runtime/Core/Public/Serialization/BitWriter.h \
+  Runtime/Core/Public/Containers/BitArray.h \
+  Runtime/Experimental/Iris/Core/Public/Iris/Serialization/IrisObjectReferencePackageMap.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/IrisCore/UHT/IrisObjectReferencePackageMap.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/CharacterMovementReplication.generated.h \
+  Runtime/Engine/Classes/Animation/AnimationAsset.h \
+  Runtime/Engine/Classes/GameFramework/RootMotionSource.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/RootMotionSource.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/Character.generated.h \
+  ../Plugins/2D/Paper2D/Intermediate/Build/Linux/UnrealEditor/Inc/Paper2D/UHT/PaperCharacter.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDCharacter.generated.h \
+  Runtime/AssetRegistry/Public/AssetRegistry/AssetRegistryModule.h \
+  Runtime/AssetRegistry/Public/AssetRegistry/IAssetRegistry.h \
+  Runtime/CoreUObject/Public/AssetRegistry/AssetIdentifier.h \
+  Runtime/Core/Public/Containers/StringFwd.h \
+  Runtime/CoreUObject/Public/Misc/AssetRegistryInterface.h \
+  Runtime/Core/Public/Containers/ContainersFwd.h \
+  Runtime/Core/Public/Containers/Set.h \
+  Runtime/Core/Public/Modules/ModuleInterface.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/AssetRegistry/UHT/IAssetRegistry.generated.h \
+  Runtime/Engine/Classes/EdGraph/EdGraph.h \
+  Runtime/Engine/Classes/EdGraph/EdGraphSchema.h \
+  Runtime/CoreUObject/Public/UObject/UObjectIterator.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimBP.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDAnimBPGeneratedClass.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimBPGeneratedClass.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDAnimInstance.cpp \
+  Runtime/Core/Public/Logging/MessageLog.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDAnimInstance.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDCharacter.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDCharacter.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDCustomVersion.cpp \
+  Runtime/Core/Public/Serialization/CustomVersion.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/PaperZDPlaySlotOverrideAction.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/PaperZDPlaySlotOverrideAction.h \
+  Runtime/Engine/Classes/Kismet/BlueprintAsyncActionBase.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/Engine/UHT/BlueprintAsyncActionBase.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDPlaySlotOverrideAction.generated.h \
+  Runtime/CoreUObject/Public/UObject/Stack.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDPlaySlotOverrideAction.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Sequencer/IPaperZDSequencerSource.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/IPaperZDSequencerSource.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Sequencer/PaperZDMovieSceneAnimationSection.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Sequencer/PaperZDMovieSceneAnimationSection.h \
+  Runtime/Engine/Classes/Curves/KeyHandle.h \
+  Runtime/MovieScene/Public/MovieSceneSection.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneBlendType.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneBlendType.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneCompletionMode.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneCompletionMode.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationCustomVersion.h \
+  Runtime/MovieScene/Public/EventHandlers/ISectionEventHandler.h \
+  Runtime/Core/Public/Containers/List.h \
+  Runtime/MovieScene/Public/EventHandlers/MovieSceneDataEventContainer.h \
+  Runtime/MovieScene/Public/MovieSceneFwd.h \
+  Runtime/Core/Public/Stats/Stats2.h \
+  Runtime/Core/Public/Misc/FrameRate.h \
+  Runtime/MovieScene/Public/MovieSceneSequenceID.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneComponentDebug.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntitySystemTypes.h \
+  Runtime/Core/Public/Algo/Find.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntityIDs.h \
+  Runtime/Core/Public/Containers/ContainerAllocationPolicies.h \
+  Runtime/Core/Public/Templates/TypeHash.h \
+  ThirdParty/Unix/LibCxx/include/c++/v1/initializer_list \
+  Runtime/Core/Public/HAL/CriticalSection.h \
+  Runtime/Core/Public/Math/NumericLimits.h \
+  Runtime/Core/Public/Math/UnrealMathSSE.h \
+  Runtime/Core/Public/Templates/UnrealTemplate.h \
+  Runtime/Core/Public/Misc/FrameTime.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSequenceID.generated.h \
+  Runtime/Core/Public/HAL/PreprocessorHelpers.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneFwd.generated.h \
+  Runtime/Core/Public/HAL/PlatformCrt.h Runtime/Core/Public/Math/Range.h \
+  Runtime/Core/Public/Misc/FrameNumber.h \
+  Runtime/Core/Public/Misc/QualifiedFrameTime.h \
+  Runtime/Core/Public/Misc/Timecode.h \
+  Runtime/MovieScene/Public/MovieSceneFrameMigration.h \
+  Runtime/Core/Public/Serialization/StructuredArchive.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneFrameMigration.generated.h \
+  Runtime/MovieScene/Public/MovieSceneSignedObject.h \
+  Runtime/MovieScene/Public/EventHandlers/ISignedObjectEventHandler.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSignedObject.generated.h \
+  Runtime/CoreUObject/Public/UObject/ScriptInterface.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSection.generated.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneFloatChannel.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannelEditorData.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationTemplateInstance.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneInstanceRegistry.h \
+  Runtime/Core/Public/Containers/SortedMap.h \
+  Runtime/Core/Public/Containers/SparseArray.h \
+  Runtime/MovieScene/Public/Evaluation/MovieScenePlayback.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneSequenceTransform.h \
+  Runtime/Core/Public/Algo/AllOf.h \
+  Runtime/Core/Public/Templates/Invoke.h \
+  Runtime/Core/Public/Algo/AnyOf.h Runtime/Core/Public/Algo/NoneOf.h \
+  Runtime/Core/Public/Algo/Common.h \
+  Runtime/Core/Public/HAL/PlatformMath.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneTimeTransform.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTimeTransform.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneTimeWarping.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTimeWarping.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSequenceTransform.generated.h \
+  Runtime/MovieScene/Public/MovieSceneTimeHelpers.h \
+  Runtime/Core/Public/Math/UnrealMathUtility.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneSequenceInstance.h \
+  Runtime/MovieScene/Public/Compilation/MovieSceneCompiledDataID.h \
+  Runtime/Core/Public/Delegates/IDelegateInstance.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntityLedger.h \
+  Runtime/MovieScene/Public/EntitySystem/IMovieSceneEntityProvider.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneSectionParameters.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSectionParameters.generated.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntityBuilder.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntityManager.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneComponentTypeHandler.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneComponentTypeInfo.h \
+  Runtime/Core/Public/Templates/MemoryOps.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntityFactoryTypes.h \
+  Runtime/Core/Public/Misc/InlineValue.h \
+  Runtime/Core/Public/HAL/UnrealMemory.h \
+  Runtime/Core/Public/Templates/PointerIsConvertibleFromTo.h \
+  Runtime/Core/Public/Templates/Decay.h \
+  Runtime/Core/Public/Templates/TypeCompatibleBytes.h \
+  Runtime/CoreUObject/Public/UObject/StrongObjectPtr.h \
+  Runtime/CoreUObject/Public/UObject/UObjectArray.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneComponentRegistry.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntityFactory.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntitySystemDirectedGraph.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneMutualComponentInclusivity.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneMutualComponentInitializer.h \
+  Runtime/Core/Public/Misc/GeneratedTypeName.h \
+  Runtime/Core/Public/Delegates/IntegerSequence.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneSequenceInstanceHandle.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/IMovieSceneEntityProvider.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationField.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationKey.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneTrackIdentifier.h \
+  Runtime/Core/Public/UObject/EditorObjectVersion.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTrackIdentifier.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvaluationKey.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationTree.h \
+  Runtime/Core/Public/Serialization/Archive.h \
+  Runtime/Core/Public/UObject/SequencerObjectVersion.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneSegment.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSegment.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvaluationField.generated.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneSharedPlaybackState.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationOperand.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvaluationOperand.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieScenePlaybackCapabilities.h \
+  Runtime/MovieScene/Public/Evaluation/IMovieScenePlaybackCapability.h \
+  Runtime/MovieScene/Public/EntitySystem/RelativePtr.h \
+  ThirdParty/Unix/LibCxx/include/c++/v1/limits \
+  ThirdParty/Unix/LibCxx/include/c++/v1/type_traits \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneRootOverridePath.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvaluationTemplateInstance.generated.h \
+  Runtime/MovieScene/Public/MovieSceneCommonHelpers.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneCurveChannelCommon.h \
+  Runtime/Core/Public/Containers/EnumAsByte.h \
+  Runtime/MovieScene/Public/KeyParams.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/KeyParams.generated.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannel.h \
+  Runtime/Core/Public/Misc/CoreDefines.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneChannel.generated.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannelData.h \
+  Runtime/Core/Public/Templates/UnrealTypeTraits.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneChannelData.generated.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannelTraits.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneCurveChannelCommon.generated.h \
+  Runtime/Engine/Classes/Curves/RealCurve.h \
+  Runtime/Core/Public/Templates/Tuple.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneFloatChannel.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDMovieSceneAnimationSection.generated.h \
+  Runtime/MovieScene/Public/MovieScene.h \
+  Runtime/MovieScene/Public/MovieSceneBinding.h \
+  Runtime/MovieScene/Public/MovieSceneTrack.h \
+  Runtime/MovieScene/Public/Compilation/MovieSceneSegmentCompiler.h \
+  Runtime/MovieScene/Public/MovieSceneTrackEvaluationField.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTrackEvaluationField.generated.h \
+  Runtime/Core/Public/UObject/UnrealNames.h \
+  Runtime/SlateCore/Public/Styling/SlateColor.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTrack.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneBinding.generated.h \
+  Runtime/MovieScene/Public/MovieSceneMarkedFrame.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneMarkedFrame.generated.h \
+  Runtime/MovieScene/Public/MovieSceneObjectBindingID.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneObjectBindingID.generated.h \
+  Runtime/MovieScene/Public/MovieScenePossessable.h \
+  Runtime/MovieScene/Public/MovieSceneDynamicBinding.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneDynamicBinding.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieScenePossessable.generated.h \
+  Runtime/MovieScene/Public/MovieSceneSpawnable.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSpawnable.generated.h \
+  Runtime/MovieScene/Public/MovieSceneTimeController.h \
+  Runtime/Core/Public/Misc/Attribute.h \
+  Runtime/CoreUObject/Public/Templates/Casts.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieScene.generated.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannelProxy.h \
+  Runtime/Core/Public/Algo/BinarySearch.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannelEditorDataEntry.h \
+  Runtime/Core/Public/Algo/Sort.h \
+  Runtime/MovieScene/Public/Channels/MovieSceneChannelHandle.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDMovieSceneAnimationSection.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Sequencer/PaperZDMovieSceneAnimationTemplate.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Sequencer/PaperZDMovieSceneAnimationTemplate.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvalTemplate.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvalTemplateBase.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvalTemplateBase.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneExecutionTokens.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/BlendableToken.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationScope.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneBlendingAccumulator.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/BlendableTokenStack.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneAnimTypeID.h \
+  Runtime/Core/Public/HAL/ThreadSafeCounter.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneBlendingActuatorID.h \
+  Runtime/MovieScene/Public/IMovieScenePlayer.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationState.h \
+  Runtime/Core/Public/Delegates/MulticastDelegateBase.h \
+  Runtime/MovieScene/Public/Evaluation/PersistentEvaluationData.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneSequenceInstanceData.h \
+  Runtime/Core/Public/Templates/EnableIf.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSequenceInstanceData.generated.h \
+  Runtime/MovieScene/Public/MovieSceneSequence.h \
+  Runtime/UniversalObjectLocator/Public/UniversalObjectLocatorFwd.h \
+  Runtime/UniversalObjectLocator/Public/UniversalObjectLocatorResolveParams.h \
+  Runtime/Core/Public/Async/Future.h Runtime/Core/Public/Misc/TVariant.h \
+  Runtime/UniversalObjectLocator/Public/UniversalObjectLocatorResolveParameterBuffer.h \
+  Runtime/UniversalObjectLocator/Public/UniversalObjectLocatorParameterTypeHandle.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/UniversalObjectLocator/UHT/UniversalObjectLocatorResolveParams.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneSequence.generated.h \
+  Runtime/UniversalObjectLocator/Public/ILocatorSpawnedCache.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/UniversalObjectLocator/UHT/ILocatorSpawnedCache.generated.h \
+  Runtime/MovieScene/Public/Evaluation/MovieScenePreAnimatedState.h \
+  Runtime/MovieScene/Public/Evaluation/SequenceDirectorPlaybackCapability.h \
+  Runtime/MovieScene/Public/MovieSceneSpawnRegister.h \
+  Runtime/MovieScene/Public/IMovieSceneObjectSpawner.h \
+  Runtime/Core/Public/Internationalization/Internationalization.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/MovieScenePreAnimatedCaptureSource.h \
+  Runtime/MovieScene/Public/EntitySystem/TrackInstance/MovieSceneTrackInstance.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntitySystemLinker.h \
+  Runtime/Engine/Public/Tickable.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntitySystemGraphs.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEntitySystemGraphs.generated.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneEntitySystemLinkerExtension.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/MovieScenePreAnimatedStateExtension.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieScenePropertySystemTypes.h \
+  Runtime/Core/Public/Containers/StringView.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneComponentAccessors.h \
+  Runtime/MovieScene/Public/EntitySystem/EntityAllocationIterator.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneComponentPtr.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieSceneSystemTaskDependencies.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/IMovieScenePreAnimatedStorage.h \
+  Runtime/MovieScene/Public/EntitySystem/MovieScenePropertyBinding.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieScenePropertyBinding.generated.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/MovieScenePreAnimatedStorageID.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/MovieScenePreAnimatedStateTypes.h \
+  Runtime/Core/Public/Templates/Less.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEntitySystemLinker.generated.h \
+  Runtime/Core/Public/HAL/PlatformMisc.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTrackInstance.generated.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/MovieScenePreAnimatedCaptureSources.h \
+  Runtime/MovieScene/Public/Evaluation/IMovieSceneEvaluationHook.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/IMovieSceneEvaluationHook.generated.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/IMovieScenePreAnimatedCaptureSource.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneAccumulatedBlendState.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneBlendingActuator.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneInitialValueStore.h \
+  Runtime/MovieScene/Public/MovieSceneExecutionToken.h \
+  Runtime/MovieScene/Public/Evaluation/PreAnimatedState/MovieSceneRestoreStateParams.h \
+  Runtime/MovieScene/Public/Evaluation/Blending/MovieSceneBlendingAccumulator.inl \
+  Runtime/MovieScene/Public/Compilation/MovieSceneTemplateInterrogation.h \
+  Runtime/Core/Public/Templates/RemoveReference.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvalTemplate.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDMovieSceneAnimationTemplate.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDMovieSceneAnimationTemplate.gen.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Private/Sequencer/PaperZDMovieSceneAnimationTrack.cpp \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Source/PaperZD/Public/Sequencer/PaperZDMovieSceneAnimationTrack.h \
+  Runtime/MovieScene/Public/MovieSceneNameableTrack.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneNameableTrack.generated.h \
+  Runtime/MovieScene/Public/Compilation/IMovieSceneTrackTemplateProducer.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/IMovieSceneTrackTemplateProducer.generated.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDMovieSceneAnimationTrack.generated.h \
+  Runtime/MovieScene/Public/Compilation/MovieSceneCompilerRules.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationTrack.h \
+  Runtime/MovieScene/Public/Evaluation/MovieSceneTrackImplementation.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneTrackImplementation.generated.h \
+  ../Intermediate/Build/Linux/UnrealEditor/Inc/MovieScene/UHT/MovieSceneEvaluationTrack.generated.h \
+  Runtime/MovieScene/Public/Compilation/IMovieSceneTemplateGenerator.h \
+  /run/media/M2/Games/epic/drive_c/users/tbf/Documents/Unreal\ Projects/GDTV/CrustyPirate/Project/Plugins/PaperZD/Intermediate/Build/Linux/UnrealEditor/Inc/PaperZD/UHT/PaperZDMovieSceneAnimationTrack.gen.cpp
