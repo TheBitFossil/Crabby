@@ -14,7 +14,9 @@ public class Project : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"EnhancedInput",
+			"Paper2D"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
