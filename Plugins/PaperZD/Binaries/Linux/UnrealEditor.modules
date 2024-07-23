@@ -1,0 +1,8 @@
+{
+	"BuildId": "33043543",
+	"Modules": 
+	{
+		"PaperZD": "libUnrealEditor-PaperZD.so",
+		"PaperZDEditor": "libUnrealEditor-PaperZDEditor.so"
+	}
+}
