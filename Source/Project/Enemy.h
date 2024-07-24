@@ -53,7 +53,11 @@ protected:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
-	void MoveTowards(const APlayerCharacter2D* Target);
+	void MoveHorizontalTo(const APlayerCharacter2D* Target);
+
+	UFUNCTION()
+	FVector DistanceTo(const APlayerCharacter2D* Target) const;
+
 
 public:
 	virtual void Tick(float DeltaTime) override;

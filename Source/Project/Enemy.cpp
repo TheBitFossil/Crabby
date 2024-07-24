@@ -3,6 +3,8 @@
 
 #include "Enemy.h"
 
+#include <string>
+
 #include "PlayerCharacter2D.h"
 
 
@@ -61,29 +63,51 @@ void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Othe
 
 //---------------------------------
 
-void AEnemy::MoveTowards(const APlayerCharacter2D* Target)
+void AEnemy::MoveHorizontalTo(const APlayerCharacter2D* Target)
 {
-	// Movement
-	const FVector Location = GetActorLocation();
-	const FVector PlayerLocation = Target->GetActorLocation();
-		
-	const FVector Direction = (PlayerLocation - Location);
-	const FVector DirNormal = Direction.GetSafeNormal();
-
-	// Distance Checking
-	const float DistanceToPlayer = FVector::Dist(Location, PlayerLocation);
-	if(StoppingDistance < DistanceToPlayer)
-	{
-		AddMovementInput(DirNormal, 1);
-	}
+	const FVector DirNormal = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	AddMovementInput(DirNormal, 1);
 }
+
+//---------------------------------
+
+FVector AEnemy::DistanceTo(const APlayerCharacter2D* Target) const
+{
+	if(!Target)
+	{
+		return FVector::Zero();
+	}
+	
+	const FVector Distance = Target->GetActorLocation() - GetActorLocation();
+	
+	return Distance;
+}
+
+//---------------------------------
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(PlayerTarget)
+	if(bIsAlive && PlayerTarget)
 	{
-		MoveTowards(PlayerTarget);
+		if(bIsMovementAllowed && StoppingDistance < DistanceTo(PlayerTarget).Length())
+		{
+			// Move Horizontal
+			MoveHorizontalTo(PlayerTarget);
+		}
+		else
+		{
+			// Attack
+			GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("Attacking!"));
+		}
+		
+		// Is Player above Jump
+		if(DistanceTo(PlayerTarget).Z > 0.f)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, FString::Printf(TEXT("Distance to: %f"), DistanceTo(PlayerTarget).Z));
+			Jump();
+		}
 		
 		// Direction Facing
 		const float Dot = GetDotProductTo(PlayerTarget);
