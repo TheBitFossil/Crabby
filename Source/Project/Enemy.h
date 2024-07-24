@@ -24,28 +24,37 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<USphereComponent> PlayerDetectorSphere;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	float DetectionRange{100.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float StoppingDistance{10.f};
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	float StoppingDistance{80.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	bool bIsMovementAllowed {true};
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<APlayerCharacter2D> PlayerTarget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Status)
 	bool bIsAlive{true};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Status)
 	float Health{100.f};
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	TSubclassOf<ALootDrop> LootDrop;
 
 	UFUNCTION()
-	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 						int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
-	
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void MoveTowards(const APlayerCharacter2D* Target);
+
 public:
 	virtual void Tick(float DeltaTime) override;
 

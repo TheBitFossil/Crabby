@@ -12,21 +12,29 @@ AEnemy::AEnemy()
 
 	PlayerDetectorSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Player Detector"));
 	PlayerDetectorSphere->SetupAttachment(RootComponent);
-	PlayerDetectorSphere->InitSphereRadius(DetectionRange);
 	PlayerDetectorSphere->SetGenerateOverlapEvents(true);
-	PlayerDetectorSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlap);
 }
+
+//---------------------------------
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	PlayerDetectorSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBegin);
+	PlayerDetectorSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEnd);
 }
 
-void AEnemy::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+//---------------------------------
+
+void AEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 							int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	if(AEnemy* Enemy = Cast<AEnemy>(OtherActor))
+	{
+		return;
+	}
+	
 	if(APlayerCharacter2D* Player = static_cast<APlayerCharacter2D*>(OtherActor))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping other: %s"), *Player->GetName());
@@ -37,33 +45,65 @@ void AEnemy::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 	}
 }
 
+//---------------------------------
+
+void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if(APlayerCharacter2D* Player = static_cast<APlayerCharacter2D*>(OtherActor))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping end"));
+		if(PlayerTarget)
+		{
+			PlayerTarget = nullptr;
+		}
+	}
+}
+
+//---------------------------------
+
+void AEnemy::MoveTowards(const APlayerCharacter2D* Target)
+{
+	// Movement
+	const FVector Location = GetActorLocation();
+	const FVector PlayerLocation = Target->GetActorLocation();
+		
+	const FVector Direction = (PlayerLocation - Location);
+	const FVector DirNormal = Direction.GetSafeNormal();
+
+	// Distance Checking
+	const float DistanceToPlayer = FVector::Dist(Location, PlayerLocation);
+	if(StoppingDistance < DistanceToPlayer)
+	{
+		AddMovementInput(DirNormal, 1);
+	}
+}
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	if(PlayerTarget)
 	{
-		float ActionValue = 0.f;
-
-		const FVector Location = GetActorLocation();
-		const FVector PlayerLocation = PlayerTarget->GetActorLocation();
-		const FVector Direction = (PlayerLocation - Location);
-
-		const float DistanceToPlayer = FVector::Dist(Location, PlayerLocation);
-
-		// Is Player behind or in Front
-
+		MoveTowards(PlayerTarget);
 		
-		if(StoppingDistance < DistanceToPlayer)
+		// Direction Facing
+		const float Dot = GetDotProductTo(PlayerTarget);
+		FString MSG = FString::Printf(TEXT("Dot %f"), Dot);
+		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, MSG);
+
+		const FRotator CurrentRotation = GetController()->GetControlRotation();
+		
+		if(Dot < 0.f) // behind
 		{
-			// Stop Moving
+			
 		}
-		else
+		else if(Dot > 0.f) // in front
 		{
-			AddMovementInput(Direction, ActionValue);
+			
 		}
 	}
 }
+
+//---------------------------------
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
