@@ -16,7 +16,6 @@ APlayerCharacter2D::APlayerCharacter2D()
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
-	
 }
 
 void APlayerCharacter2D::CalculateDirection(const float ActionValue)
