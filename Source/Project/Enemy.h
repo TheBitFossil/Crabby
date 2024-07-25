@@ -45,6 +45,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	TSubclassOf<ALootDrop> LootDrop;
 
+	/* If Player is further than JumpThreshold vertically. Jump  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	float JumpThreshold{10.f};
+
+	/* Add Impulse after Jumping to help the AI traverse forward */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	FVector JumpImpulse{100.f};
+
+	FTimerHandle JumpCoolDownTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	float JumpTimer{5.f};
+
+	UFUNCTION()
+	void OnJumpCoolDownTimerTimeout();
+
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 						int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
@@ -56,8 +72,10 @@ protected:
 	void MoveHorizontalTo(const APlayerCharacter2D* Target);
 
 	UFUNCTION()
-	FVector DistanceTo(const APlayerCharacter2D* Target) const;
+	void UpdateDirection(const APlayerCharacter2D* Target);
 
+	UFUNCTION()
+	void JumpWithImpulse();
 
 public:
 	virtual void Tick(float DeltaTime) override;

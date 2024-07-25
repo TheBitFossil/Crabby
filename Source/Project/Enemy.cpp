@@ -3,9 +3,8 @@
 
 #include "Enemy.h"
 
-#include <string>
-
 #include "PlayerCharacter2D.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 AEnemy::AEnemy()
@@ -30,7 +29,7 @@ void AEnemy::BeginPlay()
 //---------------------------------
 
 void AEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-							int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	if(AEnemy* Enemy = Cast<AEnemy>(OtherActor))
 	{
@@ -71,18 +70,50 @@ void AEnemy::MoveHorizontalTo(const APlayerCharacter2D* Target)
 
 //---------------------------------
 
-FVector AEnemy::DistanceTo(const APlayerCharacter2D* Target) const
+void AEnemy::UpdateDirection(const APlayerCharacter2D* Target)
 {
-	if(!Target)
+	const FVector DirNormal = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	const FRotator CurrentRotation = GetController()->GetControlRotation();
+	
+	if(DirNormal.X < 0.f)
 	{
-		return FVector::Zero();
+		if (CurrentRotation.Yaw != 180.0f)
+		{
+			SetActorRotation(FRotator(CurrentRotation.Pitch, 180.0f, CurrentRotation.Roll));
+		}
 	}
-	
-	const FVector Distance = Target->GetActorLocation() - GetActorLocation();
-	
-	return Distance;
+	else if(DirNormal.X > 0.f)
+	{
+		if (CurrentRotation.Yaw != 0.0f)
+		{
+			SetActorRotation(FRotator(CurrentRotation.Pitch, 0.0f, CurrentRotation.Roll));
+		}
+	}
 }
 
+/* If player is above and too far away jump.  */
+void AEnemy::JumpWithImpulse()
+{
+	const float VerticalDistanceTo = PlayerTarget->GetActorLocation().Z - GetActorLocation().Z;		
+	if(VerticalDistanceTo > JumpThreshold)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, .1f, FColor::Blue, FString::Printf(TEXT("Vertical Distance to: %f"), VerticalDistanceTo));
+		Jump();
+		if(JumpCurrentCount > 0)
+		{
+			GetCharacterMovement()->SetJumpAllowed(false);
+			GetCharacterMovement()->AddImpulse(GetActorForwardVector() * JumpImpulse);
+		}
+	}
+}
+
+//---------------------------------
+
+void AEnemy::OnJumpCoolDownTimerTimeout()
+{
+	GetCharacterMovement()->SetJumpAllowed(true);
+}
+	
 //---------------------------------
 
 void AEnemy::Tick(float DeltaTime)
@@ -91,39 +122,33 @@ void AEnemy::Tick(float DeltaTime)
 
 	if(bIsAlive && PlayerTarget)
 	{
-		if(bIsMovementAllowed && StoppingDistance < DistanceTo(PlayerTarget).Length())
+		if(bIsMovementAllowed && StoppingDistance < GetHorizontalDistanceTo(PlayerTarget))
 		{
-			// Move Horizontal
 			MoveHorizontalTo(PlayerTarget);
 		}
 		else
 		{
-			// Attack
-			GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("Attacking!"));
+			if(GetVerticalDistanceTo(PlayerTarget) < StoppingDistance)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
+					TEXT("Attacking!"));	
+			}
 		}
-		
-		// Is Player above Jump
-		if(DistanceTo(PlayerTarget).Z > 0.f)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, FString::Printf(TEXT("Distance to: %f"), DistanceTo(PlayerTarget).Z));
-			Jump();
-		}
-		
-		// Direction Facing
-		const float Dot = GetDotProductTo(PlayerTarget);
-		FString MSG = FString::Printf(TEXT("Dot %f"), Dot);
-		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, MSG);
 
-		const FRotator CurrentRotation = GetController()->GetControlRotation();
+		if(GetCharacterMovement()->IsJumpAllowed())
+		{
+			JumpWithImpulse();
+			GetWorldTimerManager().SetTimer(
+				JumpCoolDownTimerHandle,
+				this,
+				&AEnemy::OnJumpCoolDownTimerTimeout,
+				JumpTimer,
+				false,
+				JumpTimer
+			);
+		}
 		
-		if(Dot < 0.f) // behind
-		{
-			
-		}
-		else if(Dot > 0.f) // in front
-		{
-			
-		}
+		UpdateDirection(PlayerTarget);
 	}
 }
 
