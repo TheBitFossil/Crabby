@@ -3,7 +3,6 @@
 
 #include "Enemy.h"
 
-#include "EnemyAIC.h"
 #include "PlayerCharacter2D.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -103,6 +102,24 @@ void AEnemy::JumpWithImpulse()
 
 //---------------------------------
 
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	Health -= ActualDamage;
+	GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red, TEXT("Health: %f"), Health);
+
+	if(Health <= 0.f)
+	{
+		Destroy(this);
+	}
+
+	return ActualDamage;
+}
+
+//---------------------------------
+
 void AEnemy::OnJumpCoolDownTimerTimeout()
 {
 	GetCharacterMovement()->SetJumpAllowed(true);
@@ -136,8 +153,9 @@ void AEnemy::Tick(float DeltaTime)
 		{
 			if(GetVerticalDistanceTo(PlayerTarget) < StoppingDistance)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
-					TEXT("Attacking!"));	
+				/*GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
+					TEXT("Attacking!"));*/
+				
 			}
 		}
 		

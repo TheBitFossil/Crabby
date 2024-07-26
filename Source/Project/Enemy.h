@@ -19,45 +19,49 @@ public:
 	AEnemy();
 
 protected:
-	virtual void BeginPlay() override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<USphereComponent> PlayerDetectorSphere;
+		TObjectPtr<USphereComponent> PlayerDetectorSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	float DetectionRange{100.f};
+		float DetectionRange{100.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	float StoppingDistance{80.f};
+		float StoppingDistance{80.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	bool bIsMovementAllowed {true};
+		bool bIsMovementAllowed {true};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<APlayerCharacter2D> PlayerTarget;
+		TObjectPtr<APlayerCharacter2D> PlayerTarget;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Status)
-	bool bIsAlive{true};
+		bool bIsAlive{true};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Status)
-	float Health{100.f};
+		float Health{100.f};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	TSubclassOf<ALootDrop> LootDrop;
+		TSubclassOf<ALootDrop> LootDrop;
 
 	/* If Player is further than JumpThreshold vertically. Jump  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	float JumpThreshold{10.f};
+		float JumpThreshold{10.f};
 
 	/* Add Impulse after Jumping to help the AI traverse forward */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	FVector JumpImpulse{100.f};
+		FVector JumpImpulse{100.f};
 
 	FTimerHandle JumpCoolDownTimerHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	float JumpTimer{5.f};
+		float JumpTimer{5.f};
 
+	void MoveHorizontalTo(const APlayerCharacter2D* Target);
+
+	void UpdateDirection(const APlayerCharacter2D* Target);
+
+	void JumpWithImpulse();
+	
 	UFUNCTION()
 	void OnJumpCoolDownTimerTimeout();
 
@@ -68,17 +72,12 @@ protected:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UFUNCTION()
-	void MoveHorizontalTo(const APlayerCharacter2D* Target);
+	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void UpdateDirection(const APlayerCharacter2D* Target);
-
-	UFUNCTION()
-	void JumpWithImpulse();
-
-public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+public:
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 };
