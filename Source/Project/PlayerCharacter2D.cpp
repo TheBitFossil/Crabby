@@ -77,7 +77,18 @@ void APlayerCharacter2D::StopJump(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
 {
-	
+	if(!bIsAlive)
+	{
+		return;
+	}
+
+	if(bCanAttack)
+	{
+		bCanAttack = false;
+		bIsMovementAllowed = false;
+
+		GetAnimInstance()->PlayAnimationOverride(AttackAnimationSequence, FName("DefaultSlot"), 1, 0, OnAttackOverrideEndDelegate);
+	}
 }
 
 //---------------------------------
@@ -135,7 +146,13 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void APlayerCharacter2D::OnAttackOverrideEndSequence(bool Completed)
 {
+	if(!bIsAlive)
+	{
+		return;
+	}
 	
+	bCanAttack = true;
+	bIsMovementAllowed = true;
 }
 
 //---------------------------------
