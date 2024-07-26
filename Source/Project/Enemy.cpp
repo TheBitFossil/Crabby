@@ -3,8 +3,10 @@
 
 #include "Enemy.h"
 
+#include "EnemyAIC.h"
 #include "PlayerCharacter2D.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -14,6 +16,7 @@ AEnemy::AEnemy()
 	PlayerDetectorSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Player Detector"));
 	PlayerDetectorSphere->SetupAttachment(RootComponent);
 	PlayerDetectorSphere->SetGenerateOverlapEvents(true);
+	
 }
 
 //---------------------------------
@@ -94,17 +97,8 @@ void AEnemy::UpdateDirection(const APlayerCharacter2D* Target)
 /* If player is above and too far away jump.  */
 void AEnemy::JumpWithImpulse()
 {
-	const float VerticalDistanceTo = PlayerTarget->GetActorLocation().Z - GetActorLocation().Z;		
-	if(VerticalDistanceTo > JumpThreshold)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, .1f, FColor::Blue, FString::Printf(TEXT("Vertical Distance to: %f"), VerticalDistanceTo));
-		Jump();
-		if(JumpCurrentCount > 0)
-		{
-			GetCharacterMovement()->SetJumpAllowed(false);
-			GetCharacterMovement()->AddImpulse(GetActorForwardVector() * JumpImpulse);
-		}
-	}
+	Jump();
+	GetCharacterMovement()->AddImpulse(GetActorForwardVector() + JumpImpulse);
 }
 
 //---------------------------------
@@ -125,6 +119,18 @@ void AEnemy::Tick(float DeltaTime)
 		if(bIsMovementAllowed && StoppingDistance < GetHorizontalDistanceTo(PlayerTarget))
 		{
 			MoveHorizontalTo(PlayerTarget);
+
+			if(GetVerticalDistanceTo(PlayerTarget) > JumpThreshold)
+			{
+				// The player must have jumped. Get the location and do the same
+				if(PlayerTarget->GetLastJumpLocation() != FVector::Zero() && GetCharacterMovement()->IsMovingOnGround())
+				{
+					if(FVector::Dist(GetActorLocation(), PlayerTarget->GetLastJumpLocation()) <= 10.f)
+					{
+						JumpWithImpulse();
+					}
+				}
+			}
 		}
 		else
 		{
@@ -133,19 +139,6 @@ void AEnemy::Tick(float DeltaTime)
 				GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
 					TEXT("Attacking!"));	
 			}
-		}
-
-		if(GetCharacterMovement()->IsJumpAllowed())
-		{
-			JumpWithImpulse();
-			GetWorldTimerManager().SetTimer(
-				JumpCoolDownTimerHandle,
-				this,
-				&AEnemy::OnJumpCoolDownTimerTimeout,
-				JumpTimer,
-				false,
-				JumpTimer
-			);
 		}
 		
 		UpdateDirection(PlayerTarget);

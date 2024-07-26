@@ -2,7 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "PaperZDAnimInstance.h"
 #include "PaperZDCharacter.h"
+#include "AnimSequences/PaperZDAnimSequence.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PlayerCharacter2D.generated.h"
@@ -12,6 +14,7 @@ class UInputMappingContext;
 /**
  * 
  */
+
 UCLASS()
 class PROJECT_API APlayerCharacter2D : public APaperZDCharacter
 {
@@ -36,6 +39,9 @@ protected:
 	UFUNCTION()
 	void Attack(const FInputActionValue& InputActionValue);
 
+	UFUNCTION()
+	virtual void OnJumped_Implementation() override;
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -59,9 +65,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
 	TObjectPtr<UInputAction> IA_Attack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
+	TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+	bool bCanAttack{true};
+
+	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	bool bIsMovementAllowed {true};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	bool bIsAlive {true};
+
+	UFUNCTION()
+	FVector GetLastJumpLocation() const {return LastJumpLocation;}
+
+	/* Called when the PaperZD animation override ends.*/
+	UFUNCTION()
+	void OnAttackOverrideEndSequence(bool Completed);
+	
+private:
+	UPROPERTY(VisibleAnywhere, Category=Gamneplay)
+	FVector LastJumpLocation{};
 }; 

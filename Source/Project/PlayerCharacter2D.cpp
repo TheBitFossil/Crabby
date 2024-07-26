@@ -82,6 +82,14 @@ void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
+void APlayerCharacter2D::OnJumped_Implementation()
+{
+	Super::OnJumped_Implementation();
+	LastJumpLocation = GetActorLocation();
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::BeginPlay()
 {
 	Super::BeginPlay();
@@ -95,6 +103,8 @@ void APlayerCharacter2D::BeginPlay()
 			Subsystem->AddMappingContext(IMC_Default, 0);
 		}
 	}
+
+	OnAttackOverrideEndDelegate.BindUObject(this, &APlayerCharacter2D::OnAttackOverrideEndSequence);
 }
 
 //---------------------------------
@@ -119,6 +129,13 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		
 		EnhancedInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter2D::Attack);
 	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnAttackOverrideEndSequence(bool Completed)
+{
+	
 }
 
 //---------------------------------
