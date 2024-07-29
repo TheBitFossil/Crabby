@@ -11,6 +11,7 @@
 class UBoxComponent;
 class ALootDrop;
 class APlayerCharacter2D;
+class UTextRenderComponent;
 
 UCLASS()
 class PROJECT_API AEnemy : public APaperZDCharacter
@@ -42,7 +43,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Status)
 		float Health{50.f};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		TObjectPtr<UTextRenderComponent> HealthDisplay;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
@@ -110,6 +114,9 @@ protected:
 
 	UFUNCTION()
 	void OnAttackSequenceEnd(bool Completed);
+
+	UFUNCTION()
+	void UpdateHealth(int NewHealth);
 	
 public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;

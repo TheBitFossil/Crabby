@@ -39,8 +39,10 @@ void APlayerCharacter2D::BeginPlay()
 		}
 	}
 
+	/* notify when animation is complete*/
 	OnAttackOverrideEndDelegate.BindUObject(this, &APlayerCharacter2D::OnAttackOverrideEndSequence);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter2D::OnAttackCollisionBeginOverlap);
+	
 	ToggleAttackCollisionBox(false);
 }
 
@@ -115,8 +117,6 @@ void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
 		bCanAttack = false;
 		bIsMovementAllowed = false;
 		
-		ToggleAttackCollisionBox(false);
-		
 		GetAnimInstance()->PlayAnimationOverride(
 			AttackAnimationSequence,
 			FName("DefaultSlot"),
@@ -136,8 +136,6 @@ void APlayerCharacter2D::OnAttackOverrideEndSequence(bool Completed)
 		return;
 	}
 
-	ToggleAttackCollisionBox(true);
-	
 	bCanAttack = true;
 	bIsMovementAllowed = true;
 }
@@ -195,9 +193,7 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, .5f, FColor::Magenta, TEXT("Overlapped %s"), *OtherActor->GetName());
-	
-	if(OtherActor != this)
+	if(OtherActor && OtherActor != this)
 	{
 		if(AEnemy* Enemy = static_cast<AEnemy*>(OtherActor))
 		{

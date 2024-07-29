@@ -4,6 +4,7 @@
 #include "Enemy.h"
 
 #include "PlayerCharacter2D.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -21,6 +22,10 @@ AEnemy::AEnemy()
 	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Collision Detection"));
 	AttackCollisionBox->SetupAttachment(RootComponent);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnAttackCollisionOverlapBegin);
+
+	HealthDisplay = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Health Display"));
+	HealthDisplay->SetupAttachment(RootComponent);
+	HealthDisplay->bHiddenInGame = true;
 }
 
 //---------------------------------
@@ -34,6 +39,8 @@ void AEnemy::BeginPlay()
 
 	OnAttackAnimationOverrideDelegate.BindUObject(this, &AEnemy::OnAttackSequenceEnd);
 	ToggleAttackCollisionBox(false);
+
+	UpdateHealth(Health);
 }
 
 //---------------------------------
@@ -85,16 +92,32 @@ void AEnemy::OnAttackSequenceEnd(bool Completed)
 
 //---------------------------------
 
+void AEnemy::UpdateHealth(int NewHealth)
+{
+	if(!HealthDisplay)
+	{
+		return;
+	}
+	
+	const FString Msg = FString::Printf(TEXT("Health: %d"), NewHealth);
+	const FText Display = FText::FromString(Msg);
+	
+	HealthDisplay->SetText(Display);
+}
+
+//---------------------------------
+
 void AEnemy::OnAttackCollisionOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(OtherActor && OtherActor != this)
 	{
-		if(APlayerCharacter2D* Player = Cast<APlayerCharacter2D>(OtherActor))
+		APlayerCharacter2D* Player = Cast<APlayerCharacter2D>(OtherActor);
+		if(Player->bIsAlive)
 		{
 			FHitResult HitResult;
 			FPointDamageEvent PointDamageEvent;
-			PointDamageEvent.DamageTypeClass = nullptr;
+			PointDamageEvent.DamageTypeClass = UDamageType::StaticClass();
 			PointDamageEvent.Damage = AttackDmg;
 			PointDamageEvent.HitInfo = HitResult;
 			PointDamageEvent.ShotDirection = GetActorForwardVector();
@@ -153,16 +176,19 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	AActor* DamageCauser)
 {
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
+	HealthDisplay->bHiddenInGame = false;
+	UpdateHealth(Health);
+	
 	if(Health - ActualDamage > 0.f)
 	{
 		Health -= ActualDamage;
+		GetAnimInstance()->JumpToNode(FName("JumpHit"));
 	}
 	else
 	{
 		bIsAlive = false;
 		Health = 0.f;
-		Destroy(this);
+		GetAnimInstance()->JumpToNode(FName("JumpRemoval"), FName("Locomotion"));
 	}
 	
 	return ActualDamage;
@@ -211,6 +237,7 @@ void AEnemy::Tick(float DeltaTime)
 		
 		UpdateDirection(PlayerTarget);
 	}
+	
 }
 
 //---------------------------------

@@ -24,19 +24,8 @@ void UAnimNotifyPlayerAttack::OnNotifyBegin_Implementation(UPaperZDAnimInstance*
 		return;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("OnNotify Begin is being called."));
-	if (OwningInstance)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Owning Instance: %s"), *OwningInstance->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Owning Instance is nullptr in OnNotifyBegin."));
-	}
 	if (APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Owning Actor: %s"), *OwningActor->GetName());
-
 		OwningActor->ToggleAttackCollisionBox(true);
 	}
 }
@@ -51,20 +40,8 @@ void UAnimNotifyPlayerAttack::OnNotifyEnd_Implementation(UPaperZDAnimInstance* O
 		return;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("OnNotify End is being called."));
-	if (OwningInstance)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Owning Instance: %s"), *OwningInstance->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Owning Instance is nullptr in OnNotifyEnd."));
-	}
-	
 	if (APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Owning Actor: %s"), *OwningActor->GetName());
-
 		OwningActor->ToggleAttackCollisionBox(false);
 	}
 }
