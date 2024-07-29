@@ -195,7 +195,8 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 {
 	if(OtherActor && OtherActor != this)
 	{
-		if(AEnemy* Enemy = static_cast<AEnemy*>(OtherActor))
+		AEnemy* Enemy = static_cast<AEnemy*>(OtherActor);
+		if(Enemy && Enemy->bIsAlive)
 		{
 			FRadialDamageEvent RadialDamageEvent;
 			RadialDamageEvent.Origin = Enemy->GetActorLocation();

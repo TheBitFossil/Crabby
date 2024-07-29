@@ -24,7 +24,7 @@ class PROJECT_API APlayerCharacter2D : public APaperZDCharacter
 public:
 	APlayerCharacter2D();
 
-protected:
+private:
 	UFUNCTION()
 	void CalculateDirection(const float ActionValue);
 	
@@ -53,62 +53,60 @@ protected:
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UCameraComponent> CameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<USpringArmComponent> SpringArmComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UInputMappingContext> IMC_Default;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UInputAction> IA_Move;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UInputAction> IA_Jump;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UInputAction> IA_Attack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
-		bool bCanAttack{true};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack, meta=(AllowPrivateAccess = "true"))
 		float AttackDmg{10.f};
 	
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UBoxComponent> AttackCollisionBox;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-		bool bIsMovementAllowed {true};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-		bool bIsAlive {true};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-		float Health{30.f};
-	
-	UFUNCTION()
-	FVector GetLastJumpLocation() const {return LastJumpLocation;}
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+	float Health{30.f};
 
 	UFUNCTION()
 	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
 										int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
+	UPROPERTY(VisibleAnywhere, Category=Gamneplay)
+		FVector LastJumpLocation{};
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+		bool bIsAlive {true};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+		bool bIsMovementAllowed {true};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+		bool bCanAttack{true};
+	
+	UFUNCTION()
+	FVector GetLastJumpLocation() const {return LastJumpLocation;}
+	
 	UFUNCTION(BlueprintCallable)
 	void ToggleAttackCollisionBox(bool Enabled);
 	
-private:
-	UPROPERTY(VisibleAnywhere, Category=Gamneplay)
-	FVector LastJumpLocation{};
-
-public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 }; 
