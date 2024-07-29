@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PaperZDAnimInstance.h"
 #include "PaperZDCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Enemy.generated.h"
 
+class UBoxComponent;
 class ALootDrop;
 class APlayerCharacter2D;
 
@@ -38,8 +40,25 @@ protected:
 		bool bIsAlive{true};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Status)
-		float Health{100.f};
+		float Health{50.f};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+		bool bCanAttack{true};
+
+	FTimerHandle AttackCooldownTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+		float AttackCooldownTime{1.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+		float AttackDmg{10.f};
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+		TObjectPtr<UBoxComponent> AttackCollisionBox;
+		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		TSubclassOf<ALootDrop> LootDrop;
 
@@ -53,6 +72,8 @@ protected:
 
 	FTimerHandle JumpCoolDownTimerHandle;
 
+	FZDOnAnimationOverrideEndSignature OnAttackAnimationOverrideDelegate;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		float JumpTimer{5.f};
 
@@ -72,11 +93,23 @@ protected:
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+
+	UFUNCTION()
+	void OnAttackCollisionOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+						int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void OnAttackCoolDownTimerTimeOut();
+
+	void Attack();
+
+	void ToggleAttackCollisionBox(bool Enabled);
+
+	UFUNCTION()
+	void OnAttackSequenceEnd(bool Completed);
 	
 public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;

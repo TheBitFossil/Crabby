@@ -212,9 +212,34 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 			PointDamageEvent.ShotDirection = GetActorForwardVector();
 			PointDamageEvent.DamageTypeClass = nullptr;
 			
-			Enemy->TakeDamage(10.f, PointDamageEvent, GetController(), this);
+			Enemy->TakeDamage(
+				10.f,
+				PointDamageEvent,
+				GetController(),
+				this
+			);
 		}
 	}
+}
+
+//---------------------------------
+
+float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	if(Health - ActualDamage > 0.f)
+	{
+		Health -= ActualDamage;
+	}
+	else
+	{
+		bIsAlive = false;
+		Health = 0.f;
+	}
+
+	return ActualDamage;
 }
 
 //---------------------------------

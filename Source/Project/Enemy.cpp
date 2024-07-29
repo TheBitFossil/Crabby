@@ -4,8 +4,10 @@
 #include "Enemy.h"
 
 #include "PlayerCharacter2D.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+
 
 
 AEnemy::AEnemy()
@@ -15,7 +17,10 @@ AEnemy::AEnemy()
 	PlayerDetectorSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Player Detector"));
 	PlayerDetectorSphere->SetupAttachment(RootComponent);
 	PlayerDetectorSphere->SetGenerateOverlapEvents(true);
-	
+
+	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Collision Detection"));
+	AttackCollisionBox->SetupAttachment(RootComponent);
+	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnAttackCollisionOverlapBegin);
 }
 
 //---------------------------------
@@ -26,6 +31,9 @@ void AEnemy::BeginPlay()
 
 	PlayerDetectorSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBegin);
 	PlayerDetectorSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEnd);
+
+	OnAttackAnimationOverrideDelegate.BindUObject(this, &AEnemy::OnAttackSequenceEnd);
+	ToggleAttackCollisionBox(false);
 }
 
 //---------------------------------
@@ -58,6 +66,45 @@ void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Othe
 		if(PlayerTarget)
 		{
 			PlayerTarget = nullptr;
+		}
+	}
+}
+
+//---------------------------------
+
+void AEnemy::OnAttackSequenceEnd(bool Completed)
+{
+	if(!bIsAlive || Completed)
+	{
+		return;
+	}
+
+	ToggleAttackCollisionBox(false);
+	bCanAttack = true;
+}
+
+//---------------------------------
+
+void AEnemy::OnAttackCollisionOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(OtherActor && OtherActor != this)
+	{
+		if(APlayerCharacter2D* Player = Cast<APlayerCharacter2D>(OtherActor))
+		{
+			FHitResult HitResult;
+			FPointDamageEvent PointDamageEvent;
+			PointDamageEvent.DamageTypeClass = nullptr;
+			PointDamageEvent.Damage = AttackDmg;
+			PointDamageEvent.HitInfo = HitResult;
+			PointDamageEvent.ShotDirection = GetActorForwardVector();
+			
+			Player->TakeDamage(
+				AttackDmg,
+				PointDamageEvent,
+				GetController(),
+				this
+			);
 		}
 	}
 }
@@ -107,14 +154,17 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 {
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	Health -= ActualDamage;
-	GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red, TEXT("Health: %f"), Health);
-
-	if(Health <= 0.f)
+	if(Health - ActualDamage > 0.f)
 	{
+		Health -= ActualDamage;
+	}
+	else
+	{
+		bIsAlive = false;
+		Health = 0.f;
 		Destroy(this);
 	}
-
+	
 	return ActualDamage;
 }
 
@@ -155,7 +205,7 @@ void AEnemy::Tick(float DeltaTime)
 			{
 				/*GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
 					TEXT("Attacking!"));*/
-				
+				Attack();
 			}
 		}
 		
@@ -165,8 +215,53 @@ void AEnemy::Tick(float DeltaTime)
 
 //---------------------------------
 
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AEnemy::Attack()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if(bCanAttack)
+	{
+		bCanAttack = false;
+		ToggleAttackCollisionBox(true);
+		
+		GetAnimInstance()->PlayAnimationOverride(
+			AttackAnimationSequence,
+			FName("DefaultSlot"),
+			1,
+			0,
+			OnAttackAnimationOverrideDelegate
+		);
+
+		GetWorldTimerManager().SetTimer(
+			AttackCooldownTimer,
+			this,
+			&AEnemy::OnAttackCoolDownTimerTimeOut,
+			AttackCooldownTime,
+			false,
+			AttackCooldownTime
+		);
+	}
 }
 
+//---------------------------------
+
+void AEnemy::ToggleAttackCollisionBox(bool Enabled)
+{
+	if(Enabled)
+	{
+		AttackCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		AttackCollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	}
+	else
+	{
+		AttackCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AttackCollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	}
+}
+
+//---------------------------------
+
+void AEnemy::OnAttackCoolDownTimerTimeOut()
+{
+	ToggleAttackCollisionBox(false);
+
+	bCanAttack = true;
+}

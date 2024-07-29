@@ -81,6 +81,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
 		bool bCanAttack{true};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+		float AttackDmg{10.f};
+	
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack)
@@ -92,6 +95,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		bool bIsAlive {true};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+		float Health{30.f};
+	
 	UFUNCTION()
 	FVector GetLastJumpLocation() const {return LastJumpLocation;}
 
@@ -102,4 +108,7 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, Category=Gamneplay)
 	FVector LastJumpLocation{};
+
+public:
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 }; 
