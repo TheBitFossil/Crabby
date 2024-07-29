@@ -55,7 +55,7 @@ void AEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	
 	if(APlayerCharacter2D* Player = static_cast<APlayerCharacter2D*>(OtherActor))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping other: %s"), *Player->GetName());
+		//GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping other: %s"), *Player->GetName());
 		if(!PlayerTarget)
 		{
 			PlayerTarget = Player;
@@ -69,25 +69,12 @@ void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Othe
 {
 	if(APlayerCharacter2D* Player = static_cast<APlayerCharacter2D*>(OtherActor))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping end"));
+		//GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping end"));
 		if(PlayerTarget)
 		{
 			PlayerTarget = nullptr;
 		}
 	}
-}
-
-//---------------------------------
-
-void AEnemy::OnAttackSequenceEnd(bool Completed)
-{
-	if(!bIsAlive || Completed)
-	{
-		return;
-	}
-
-	ToggleAttackCollisionBox(false);
-	bCanAttack = true;
 }
 
 //---------------------------------
@@ -103,6 +90,36 @@ void AEnemy::UpdateHealth(int NewHealth)
 	const FText Display = FText::FromString(Msg);
 	
 	HealthDisplay->SetText(Display);
+}
+
+//---------------------------------
+
+void AEnemy::Stun(const float DurationInSeconds)
+{
+	bIsStunned = true;
+
+	const bool IsTimerActive = GetWorldTimerManager().IsTimerActive(StunTimerHandle);
+	if(IsTimerActive)
+	{
+		GetWorldTimerManager().ClearTimer(StunTimerHandle);
+	}
+	
+	GetWorldTimerManager().SetTimer(StunTimerHandle, this,
+		&AEnemy::OnStunTimerTimeOut,
+		1.f,
+		false,
+		DurationInSeconds
+	);
+
+	/* If we are attacked, we need to cancel. */ 
+	GetAnimInstance()->StopAllAnimationOverrides();
+}
+
+//---------------------------------
+
+void AEnemy::OnStunTimerTimeOut()
+{
+	bIsStunned = false;
 }
 
 //---------------------------------
@@ -182,12 +199,18 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	if(Health - ActualDamage > 0.f)
 	{
 		Health -= ActualDamage;
+		// A. send from caller or B. fixed inside the enemy depending on damage
+		Stun(.3f);
 		GetAnimInstance()->JumpToNode(FName("JumpHit"));
 	}
 	else
 	{
 		bIsAlive = false;
+		bCanAttack = false;
+		
 		Health = 0.f;
+		HealthDisplay->bHiddenInGame = true;
+
 		GetAnimInstance()->JumpToNode(FName("JumpRemoval"), FName("Locomotion"));
 	}
 	
@@ -207,7 +230,7 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(bIsAlive && PlayerTarget)
+	if(bIsAlive && PlayerTarget && !bIsStunned)
 	{
 		if(bIsMovementAllowed && StoppingDistance < GetHorizontalDistanceTo(PlayerTarget))
 		{
@@ -244,16 +267,15 @@ void AEnemy::Tick(float DeltaTime)
 
 void AEnemy::Attack()
 {
-	if(bCanAttack)
+	if(bCanAttack && bIsAlive && !bIsStunned)
 	{
 		bCanAttack = false;
-		ToggleAttackCollisionBox(true);
 		
 		GetAnimInstance()->PlayAnimationOverride(
 			AttackAnimationSequence,
 			FName("DefaultSlot"),
-			1,
-			0,
+			1.f,
+			0.f,
 			OnAttackAnimationOverrideDelegate
 		);
 
@@ -288,7 +310,15 @@ void AEnemy::ToggleAttackCollisionBox(bool Enabled)
 
 void AEnemy::OnAttackCoolDownTimerTimeOut()
 {
-	ToggleAttackCollisionBox(false);
+	if(bIsAlive)
+	{
+		bCanAttack = true;
+	}
+}
 
-	bCanAttack = true;
+//---------------------------------
+
+void AEnemy::OnAttackSequenceEnd(bool Completed)
+{
+	// Empty
 }

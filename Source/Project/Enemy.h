@@ -45,6 +45,14 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TObjectPtr<UTextRenderComponent> HealthDisplay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack)
+		float StunTime{0.f};
+
+	FTimerHandle StunTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+		bool bIsStunned{false};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
@@ -110,13 +118,15 @@ protected:
 
 	void Attack();
 
+	UFUNCTION(BlueprintCallable)
 	void ToggleAttackCollisionBox(bool Enabled);
 
-	UFUNCTION()
 	void OnAttackSequenceEnd(bool Completed);
 
-	UFUNCTION()
 	void UpdateHealth(int NewHealth);
+
+	void Stun(float DurationInSeconds);
+	void OnStunTimerTimeOut();
 	
 public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
