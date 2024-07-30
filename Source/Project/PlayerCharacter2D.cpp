@@ -108,7 +108,7 @@ void APlayerCharacter2D::MoveCompleted(const FInputActionValue& InputActionValue
 
 void APlayerCharacter2D::StartJump(const FInputActionValue& InputActionValue)
 {
-	if(!bIsAlive)
+	if(!bIsAlive || bIsStunned)
 	{
 		return;
 	}
@@ -138,7 +138,7 @@ void APlayerCharacter2D::StopJump(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
 {
-	if(!bIsAlive)
+	if(!bIsAlive || bIsStunned)
 	{
 		return;
 	}
@@ -407,8 +407,8 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 
 //---------------------------------
 
-float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+											AController* EventInstigator,AActor* DamageCauser)
 {
 	if(bIsImmortal || !bIsAlive)
 	{
@@ -423,6 +423,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
 
 		bIsStunned = true;
+		
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this,
 			&APlayerCharacter2D::OnStunTimerTimeOut,
 			StunDuration,

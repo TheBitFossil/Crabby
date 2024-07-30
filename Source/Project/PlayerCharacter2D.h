@@ -91,10 +91,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
 		float WallHangDistance {24.f};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay",
+					meta=(AllowPrivateAccess = "true", ClampMin = "0.1", ClampMax = "4"))
 		float CustomGravityScale {2.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump",
+					meta=(AllowPrivateAccess = "true", ClampMin = "0.1", ClampMax = "4"))
 		float WallJumpGravityScale {.35f};
 	
 	UPROPERTY(VisibleAnywhere, Category=Gameplay)
