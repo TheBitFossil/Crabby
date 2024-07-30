@@ -194,15 +194,13 @@ void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 	if(Enabled)
 	{
 		CMC->GravityScale = CustomGravityScale;
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("Normal"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("Normal"));
 	}
 	else
 	{
-		CMC->GravityScale = 0.1f;
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Low Gravity"));
+		CMC->GravityScale = WallJumpGravityScale;
+		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Low Gravity"));
 	}
-
-	
 }
 
 //---------------------------------

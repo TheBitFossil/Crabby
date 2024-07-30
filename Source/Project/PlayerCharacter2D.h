@@ -133,9 +133,12 @@ public:
 	void ToggleAttackCollisionBox(bool Enabled);
 
 	//getters
-	FORCEINLINE FVector GetLastJumpLocation() const {return LastJumpLocation; }
+	FORCEINLINE FVector GetLastJumpLocation() const {return LastJumpLocation;}
 
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	FORCEINLINE EMoveState GetCurrentMoveState() const {return MovementState;}
+	
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+								AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
 	virtual void BeginPlay() override;
