@@ -9,11 +9,15 @@ UWallDetectorComponent::UWallDetectorComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+//---------------------------------
+
 void UWallDetectorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
+
+//---------------------------------
 
 void UWallDetectorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)

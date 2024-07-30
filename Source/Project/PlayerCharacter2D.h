@@ -74,7 +74,7 @@ private:
 		TObjectPtr<UBoxComponent> AttackCollisionBox;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UWallDetectorComponent> WallDetectorComponentForward;
+		TObjectPtr<UWallDetectorComponent> WallDetectorComponentForward;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float Health{30.f};
@@ -95,7 +95,7 @@ private:
 		float CustomGravityScale {2.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
-		float WallJumpGravityScale {.5f};
+		float WallJumpGravityScale {.35f};
 	
 	UPROPERTY(VisibleAnywhere, Category=Gameplay)
 		FVector LastJumpLocation{};
