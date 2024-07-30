@@ -18,12 +18,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess ="true"))
-		bool bIsWallInRange{false};
-	
-	bool IsWallInRange(const float& WallHangRange, const FHitResult& HitResult);
-	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -31,10 +25,11 @@ public:
 	TArray<FHitResult> HitResults;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float TraceDistance{100.f};
+		float TraceDistance{32.f};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float DetectedWallDistance{};
 	
-	bool IsDetectingWall(const float& WallHangRange, const AActor* IgnoredActor);
+	bool IsDetectingWall(const AActor* IgnoredActor = nullptr);
 	
-	UFUNCTION()
-	FORCEINLINE bool CanWallHang() const {return bIsWallInRange;}
 };

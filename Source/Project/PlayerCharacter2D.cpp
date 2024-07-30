@@ -18,8 +18,6 @@ APlayerCharacter2D::APlayerCharacter2D()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent->SetUsingAbsoluteRotation(true);
-	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	
@@ -54,7 +52,6 @@ void APlayerCharacter2D::BeginPlay()
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter2D::OnAttackCollisionBeginOverlap);
 
 	GetCharacterMovement()->GravityScale = CustomGravityScale;
-	
 	ToggleAttackCollisionBox(false);
 }
 
@@ -62,31 +59,16 @@ void APlayerCharacter2D::BeginPlay()
 
 void APlayerCharacter2D::SetDirectionFacing(const float ActionValue)
 {
-	if(!Controller)
+	if(!Controller || MovementState == EMoveState::MOVE_Wall)
 	{
 		return;
 	}
 	
-	const FRotator CurrentRotation = GetCurrentRotation();
-	
-	if(ActionValue < 0.f)
-	{
-		if(!FMath::IsNearlyEqual(CurrentRotation.Yaw, 180.f, 1.f))
-		{
-			FRotator NewRotation = FRotator(CurrentRotation.Pitch, 180.f, CurrentRotation.Roll);
-			Controller->SetControlRotation(NewRotation);
-			//SetActorRotation(NewRotation);
-		}
-	}
-	else if(ActionValue > 0.f)
-	{
-		if(!FMath::IsNearlyEqual(CurrentRotation.Yaw, 0.f, 1.f))
-		{
-			FRotator NewRotation = FRotator(CurrentRotation.Pitch, 0.f, CurrentRotation.Roll);
-			Controller->SetControlRotation(NewRotation);
-			//SetActorRotation(NewRotation);
-		}
-	}
+	FRotator NewRotation = GetControlRotation();
+
+	// IF its 0.f then no change for the current Value
+	NewRotation.Yaw = (ActionValue < 0.f) ? 180.f : (ActionValue > 0.f) ? 0.f : NewRotation.Yaw;
+	Controller->SetControlRotation(NewRotation);
 }
 
 //---------------------------------
@@ -99,15 +81,27 @@ void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 	}
 	
 	const float ActionValue = InputActionValue.Get<float>();
-
-	CurrentMovementInput = ActionValue;
-	
+		
 	if(bIsAlive && bIsMovementAllowed)
 	{
 		const FVector Direction = FVector(1.f, 0.f, 0.f); 
 		AddMovementInput(Direction, ActionValue);
 		SetDirectionFacing(ActionValue);
 	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::MoveCompleted(const FInputActionValue& InputActionValue)
+{
+	if(!Controller || bIsStunned)
+	{
+		return;
+	}
+	
+	
+	FRotator LastRotation = GetControlRotation();
+	Controller->SetControlRotation(FRotator(LastRotation.Pitch, LastRotation.Yaw, LastRotation.Roll));
 }
 
 //---------------------------------
@@ -125,9 +119,9 @@ void APlayerCharacter2D::StartJump(const FInputActionValue& InputActionValue)
 		Jump();
 		break;
 	case EMoveState::MOVE_Air:
-		// Double Jump
+		// DoubleJump()
 		break;
-	case EMoveState::Move_Wall:
+	case EMoveState::MOVE_Wall:
 		WallJump();
 		break;
 	}
@@ -189,6 +183,30 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
+void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
+{
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+	if(!CMC)
+	{
+		return;
+	}
+	
+	if(Enabled)
+	{
+		CMC->GravityScale = CustomGravityScale;
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("Normal"));
+	}
+	else
+	{
+		CMC->GravityScale = 0.1f;
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Low Gravity"));
+	}
+
+	
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::OnDashTimerTimeOut()
 {
 	bCanDash = true;
@@ -197,26 +215,13 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 
 //---------------------------------
 
-void APlayerCharacter2D::Falling()
-{
-	Super::Falling();
-
-}
-
-//---------------------------------
-
 void APlayerCharacter2D::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	bCanWallJump = false;
-
-	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
+	if(MovementState != EMoveState::MOVE_Ground)
 	{
-		if(CMC->GravityScale != CustomGravityScale)
-		{
-			CMC->GravityScale = CustomGravityScale;
-		}
+		MovementState = EMoveState::MOVE_Ground;
 	}
 }
 
@@ -224,22 +229,27 @@ void APlayerCharacter2D::Landed(const FHitResult& Hit)
 
 void APlayerCharacter2D::WallJump()
 {
-	if(!bCanWallJump)
+	if(MovementState != EMoveState::MOVE_Wall || !GetCharacterMovement())
 	{
 		return;
 	}
-	
-	bCanWallJump = false;
-	const FVector BackwardDirection = -GetActorForwardVector();
-	const FVector UpwardDirection = GetActorUpVector();
-	
-	const FVector JumpDirection = (BackwardDirection + UpwardDirection) * WallJumpForce;
 
-	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
-	{
-		CMC->GravityScale = CustomGravityScale;
-		LaunchCharacter(JumpDirection, true, true);
-	}
+	const FVector DirNormal = (-GetActorForwardVector() + GetActorUpVector()).GetSafeNormal();
+	const FVector JumpDirection = DirNormal * WallJumpForce;
+
+	ToggleGravity(false);
+
+	LaunchCharacter(JumpDirection, true, true);	// Get some distance from the Wall
+
+	//SetDirectionFacing(-1);								// Turn around
+
+	GetWorldTimerManager().SetTimer(
+		WallJumpTimerHandle,
+		this,
+		&APlayerCharacter2D::OnWallJumpTimerTimeOut,
+		WallHangDuration,
+		false
+	);
 }
 
 //---------------------------------
@@ -276,6 +286,7 @@ void APlayerCharacter2D::ToggleAttackCollisionBox(bool Enabled)
 void APlayerCharacter2D::OnJumped_Implementation()
 {
 	Super::OnJumped_Implementation();
+
 	LastJumpLocation = GetActorLocation();
 }
 
@@ -283,11 +294,8 @@ void APlayerCharacter2D::OnJumped_Implementation()
 
 void APlayerCharacter2D::OnWallJumpTimerTimeOut()
 {
-	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
-	{
-		CMC->GravityScale = CustomGravityScale;
-		bCanWallJump = false;
-	}
+	MovementState = EMoveState::MOVE_Air;
+	ToggleGravity(true);
 }
 
 //---------------------------------
@@ -299,38 +307,52 @@ void APlayerCharacter2D::OnStunTimerTimeOut()
 
 //---------------------------------
 
+void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
+{
+	if(MovementState == EMoveState::MOVE_Air)
+	{
+		ToggleGravity(true);
+		
+		/* If in range and we press forward direction. Change State*/
+		if(WallDetectorComponentForward->IsDetectingWall(this))
+		{
+			// Are we pressing in forward direction , which means we are clinging to the wall
+			const float& DistanceToWall = WallDetectorComponentForward->DetectedWallDistance;
+			if (DistanceToWall < WallHangDistance && (CMC->GetLastInputVector().X > 0.f || CMC->GetLastInputVector().X < 0.f))
+			{
+				MovementState = EMoveState::MOVE_Wall;
+				
+				// Stop Player from traversing in last Z Direction
+				CMC->Velocity = FVector::Zero();
+			}
+		}
+
+	}
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
 	{
+		/*
+		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
+			CMC->GetLastUpdateVelocity().ToString());
+		*/
+	
 		if (CMC->IsMovingOnGround())
 		{
 			MovementState = EMoveState::MOVE_Ground;
 		}
-		else if(!CMC->IsMovingOnGround() && CMC->GetLastUpdateVelocity().Z > 0.f)
+		else if(!CMC->IsMovingOnGround() && CMC->GetLastUpdateVelocity().Z < 0.f)		// Grab Wall only when falling
 		{
 			MovementState = EMoveState::MOVE_Air;
 		}
-	}
 
-	if(MovementState == EMoveState::MOVE_Air)
-	{
-		/* We need to check if there is a wall in Range before next call */
-		if(WallDetectorComponentForward->IsDetectingWall(WallHangRange, this))
-		{
-			/* If its in range and we press forward direction. Change State*/
-			if(WallDetectorComponentForward->CanWallHang() && CurrentMovementInput > 0.f)
-			{
-				MovementState = EMoveState::Move_Wall;
-			}
-			else
-			{
-				/* Go back to Air mode, when we release the Input */
-				MovementState = EMoveState::MOVE_Air;
-			}
-		}
+		HandleAirMovement(CMC);
 	}
 }
 
@@ -343,6 +365,7 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	if(UEnhancedInputComponent* EnhancedInput = static_cast<UEnhancedInputComponent*>(PlayerInputComponent))
 	{
 		EnhancedInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter2D::Move);
+		EnhancedInput->BindAction(IA_Move, ETriggerEvent::Completed, this, &APlayerCharacter2D::MoveCompleted);
 		
 		EnhancedInput->BindAction(IA_Jump, ETriggerEvent::Started,this, &APlayerCharacter2D::StartJump);
 		EnhancedInput->BindAction(IA_Jump, ETriggerEvent::Completed, this, &APlayerCharacter2D::StopJump);
@@ -402,7 +425,11 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
 
 		bIsStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &APlayerCharacter2D::OnStunTimerTimeOut, StunDuration, false);
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this,
+			&APlayerCharacter2D::OnStunTimerTimeOut,
+			StunDuration,
+			false
+		);
 	}
 	else
 	{

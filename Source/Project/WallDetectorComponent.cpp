@@ -19,22 +19,14 @@ void UWallDetectorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// Check for collisions
-	
-	// Return true if it's a Wall
-	
 }
 
 //---------------------------------
 
-bool UWallDetectorComponent::IsDetectingWall(const float& WallHangRange, const AActor* IgnoredActor = nullptr)
+bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
 {
-	if(!WallHangRange)
-	{
-		return false;
-	}
-
+	DetectedWallDistance = MAX_FLT;
+	
 	const FVector StartLocation = GetComponentLocation();
 	const FVector End = StartLocation + GetForwardVector() * TraceDistance;
 	FCollisionQueryParams QueryParams;
@@ -44,44 +36,30 @@ bool UWallDetectorComponent::IsDetectingWall(const float& WallHangRange, const A
 		QueryParams.AddIgnoredActor(IgnoredActor);      
 	}
 	
-	bool Results = GetWorld()->LineTraceMultiByChannel(HitResults, StartLocation, End,
+	bool bHit = GetWorld()->LineTraceMultiByChannel(HitResults, StartLocation, End,
 														ECC_WorldStatic, QueryParams);
-	if(Results)
+	if(bHit)
 	{
 		for (const FHitResult& Hit : HitResults)
 		{
 			DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
-				FColor::Yellow, false, 1.f);
+				FColor::Red, false, 1.f);
 
-			IsWallInRange(WallHangRange, Hit);
+			if(Hit.GetComponent()->GetCollisionObjectType() == ECC_WorldStatic)
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,
+				//						Hit.Component->GetName());
+
+				const float Distance = FVector::Dist(GetComponentLocation(), Hit.ImpactPoint);
+				GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,
+										FString::Printf(TEXT("Distance: %f"), Distance));
+
+				DetectedWallDistance = Distance;
+				return true;
+			}
 		}
-		return true;
 	}
-	
+
 	DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
 	return false;
 }
-
-//---------------------------------
-
-bool UWallDetectorComponent::IsWallInRange(const float& WallHangRange, const FHitResult& HitResult)
-{
-	if(!WallHangRange || !HitResult.GetComponent())
-	{
-		return false;
-	}
-	
-	if(HitResult.GetComponent()->GetCollisionObjectType() == ECC_WorldStatic)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-								HitResult.Component->GetName());
-
-		const float Distance = FVector::Dist(GetComponentLocation(), HitResult.ImpactPoint);
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-								FString::Printf(TEXT("Distance: %f"), Distance));
-
-		return bIsWallInRange = Distance < WallHangRange;
-	}
-	return false;
-}
-

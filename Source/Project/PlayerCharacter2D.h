@@ -19,11 +19,11 @@ class UCameraComponent;
  */
 
 UENUM()
-enum class EMoveState
+enum class EMoveState : uint8
 {
 	MOVE_Ground,
 	MOVE_Air,
-	Move_Wall
+	MOVE_Wall
 };
 
 UCLASS()
@@ -35,18 +35,6 @@ public:
 	APlayerCharacter2D();
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
-		bool bCanWallJump{false};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
-		float WallTraceDistance{300.f};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
-		float WallJumpForce{500.f};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
-		float WallHangDistance {30.f};
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Skills, meta=(AllowPrivateAccess = "true"))
 		float DashCooldownTime{2.f};
 	
@@ -94,28 +82,31 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float StunDuration{.3f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
 		float WallHangDuration{2.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
-		float WallHangRange{30.f};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+		float WallJumpForce{500.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+		float WallHangDistance {24.f};
 	
-	UPROPERTY(VisibleAnywhere, Category=Gamneplay)
-		FVector LastJumpLocation{};
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
-		float CurrentMovementInput {};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay", meta=(AllowPrivateAccess = "true"))
 		float CustomGravityScale {2.f};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+		float WallJumpGravityScale {.5f};
+	
+	UPROPERTY(VisibleAnywhere, Category=Gameplay)
+		FVector LastJumpLocation{};
+	
 	FTimerHandle DashTimerDelegateHandle;
 	FTimerHandle StunTimerHandle;
 	FTimerHandle WallJumpTimerHandle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
 	EMoveState MovementState;
-	
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		bool bIsAlive {true};
@@ -129,7 +120,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
 		bool bCanDash{true};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|WallJump")
+		bool bIsWallInRange{false};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Gameplay)
 		bool bIsImmortal{false};
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category=Gameplay)
@@ -141,18 +135,14 @@ public:
 	//getters
 	FORCEINLINE FVector GetLastJumpLocation() const {return LastJumpLocation; }
 
-	FORCEINLINE FRotator GetCurrentRotation() const {return Controller->GetControlRotation();}
-	
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
 	virtual void BeginPlay() override;
-	
+
 	/* Called when the Dash is ready to be used again */
 	UFUNCTION()
 	void OnDashTimerTimeOut();
-
-	virtual void Falling() override;
 
 	virtual void Landed(const FHitResult& Hit) override;
 	
@@ -174,12 +164,16 @@ private:
 										int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void SetDirectionFacing(const float ActionValue);
 	
 	void Move(const FInputActionValue& InputActionValue);
+
+	void MoveCompleted(const FInputActionValue& InputActionValue);
+
+	void HandleAirMovement(UCharacterMovementComponent* CMC);
 	
 	void StartJump(const FInputActionValue& InputActionValue);
 	
@@ -188,4 +182,7 @@ private:
 	void Attack(const FInputActionValue& InputActionValue);
 	
 	void Dash(const FInputActionValue& InputActionValue);
+	
+	void ToggleGravity(const bool Enabled) const;
+
 }; 
