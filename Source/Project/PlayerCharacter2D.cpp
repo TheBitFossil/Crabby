@@ -6,13 +6,20 @@
 #include "Enemy.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "WallDetectorComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "Engine/DamageEvents.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 
 APlayerCharacter2D::APlayerCharacter2D()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootComponent->SetUsingAbsoluteRotation(true);
+	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	
@@ -21,6 +28,9 @@ APlayerCharacter2D::APlayerCharacter2D()
 
 	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Collision Detector"));
 	AttackCollisionBox->SetupAttachment(RootComponent);
+
+	WallDetectorComponentForward = CreateDefaultSubobject<UWallDetectorComponent>(TEXT("Wall Detector"));
+	WallDetectorComponentForward->SetupAttachment(RootComponent);
 }
 
 //---------------------------------
@@ -42,28 +52,39 @@ void APlayerCharacter2D::BeginPlay()
 	/* notify when animation is complete*/
 	OnAttackOverrideEndDelegate.BindUObject(this, &APlayerCharacter2D::OnAttackOverrideEndSequence);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter2D::OnAttackCollisionBeginOverlap);
+
+	GetCharacterMovement()->GravityScale = CustomGravityScale;
 	
 	ToggleAttackCollisionBox(false);
 }
 
 //---------------------------------
 
-void APlayerCharacter2D::CalculateDirection(const float ActionValue)
+void APlayerCharacter2D::SetDirectionFacing(const float ActionValue)
 {
-	const FRotator CurrentDirection = Controller->GetControlRotation();
+	if(!Controller)
+	{
+		return;
+	}
+	
+	const FRotator CurrentRotation = GetCurrentRotation();
 	
 	if(ActionValue < 0.f)
 	{
-		if(CurrentDirection.Yaw != 180.f)
+		if(!FMath::IsNearlyEqual(CurrentRotation.Yaw, 180.f, 1.f))
 		{
-			Controller->SetControlRotation(FRotator(CurrentDirection.Pitch,180.f,CurrentDirection.Roll));
+			FRotator NewRotation = FRotator(CurrentRotation.Pitch, 180.f, CurrentRotation.Roll);
+			Controller->SetControlRotation(NewRotation);
+			//SetActorRotation(NewRotation);
 		}
 	}
 	else if(ActionValue > 0.f)
 	{
-		if(CurrentDirection.Yaw != 0.f)
+		if(!FMath::IsNearlyEqual(CurrentRotation.Yaw, 0.f, 1.f))
 		{
-			Controller->SetControlRotation(FRotator(CurrentDirection.Pitch,0.f,CurrentDirection.Roll));
+			FRotator NewRotation = FRotator(CurrentRotation.Pitch, 0.f, CurrentRotation.Roll);
+			Controller->SetControlRotation(NewRotation);
+			//SetActorRotation(NewRotation);
 		}
 	}
 }
@@ -72,17 +93,20 @@ void APlayerCharacter2D::CalculateDirection(const float ActionValue)
 
 void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 {
-	if(!Controller)
+	if(!Controller || bIsStunned)
 	{
 		return;
 	}
 	
 	const float ActionValue = InputActionValue.Get<float>();
+
+	CurrentMovementInput = ActionValue;
+	
 	if(bIsAlive && bIsMovementAllowed)
 	{
 		const FVector Direction = FVector(1.f, 0.f, 0.f); 
 		AddMovementInput(Direction, ActionValue);
-		CalculateDirection(ActionValue);
+		SetDirectionFacing(ActionValue);
 	}
 }
 
@@ -90,9 +114,22 @@ void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::StartJump(const FInputActionValue& InputActionValue)
 {
-	if(bIsAlive && bIsMovementAllowed)
+	if(!bIsAlive)
 	{
+		return;
+	}
+
+	switch (MovementState)
+	{
+	case EMoveState::MOVE_Ground:
 		Jump();
+		break;
+	case EMoveState::MOVE_Air:
+		// Double Jump
+		break;
+	case EMoveState::Move_Wall:
+		WallJump();
+		break;
 	}
 }
 
@@ -124,6 +161,84 @@ void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
 			0,
 			OnAttackOverrideEndDelegate
 		);
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
+{
+	if(!bCanDash)
+	{
+		return;
+	}
+
+	const FVector DashDirection = GetActorForwardVector();
+	LaunchCharacter(DashDirection * DashForce, true, true);
+	bCanDash = false;
+	bIsImmortal = true;
+	
+	GetWorldTimerManager().SetTimer(DashTimerDelegateHandle,
+		this,
+		&APlayerCharacter2D::OnDashTimerTimeOut,
+		1.f,
+		false,
+		DashCooldownTime
+	);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnDashTimerTimeOut()
+{
+	bCanDash = true;
+	bIsImmortal = false;
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Falling()
+{
+	Super::Falling();
+
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	bCanWallJump = false;
+
+	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		if(CMC->GravityScale != CustomGravityScale)
+		{
+			CMC->GravityScale = CustomGravityScale;
+		}
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::WallJump()
+{
+	if(!bCanWallJump)
+	{
+		return;
+	}
+	
+	bCanWallJump = false;
+	const FVector BackwardDirection = -GetActorForwardVector();
+	const FVector UpwardDirection = GetActorUpVector();
+	
+	const FVector JumpDirection = (BackwardDirection + UpwardDirection) * WallJumpForce;
+
+	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		CMC->GravityScale = CustomGravityScale;
+		LaunchCharacter(JumpDirection, true, true);
 	}
 }
 
@@ -166,9 +281,57 @@ void APlayerCharacter2D::OnJumped_Implementation()
 
 //---------------------------------
 
+void APlayerCharacter2D::OnWallJumpTimerTimeOut()
+{
+	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		CMC->GravityScale = CustomGravityScale;
+		bCanWallJump = false;
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnStunTimerTimeOut()
+{
+	bIsStunned = false;
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		if (CMC->IsMovingOnGround())
+		{
+			MovementState = EMoveState::MOVE_Ground;
+		}
+		else if(!CMC->IsMovingOnGround() && CMC->GetLastUpdateVelocity().Z > 0.f)
+		{
+			MovementState = EMoveState::MOVE_Air;
+		}
+	}
+
+	if(MovementState == EMoveState::MOVE_Air)
+	{
+		/* We need to check if there is a wall in Range before next call */
+		if(WallDetectorComponentForward->IsDetectingWall(WallHangRange, this))
+		{
+			/* If its in range and we press forward direction. Change State*/
+			if(WallDetectorComponentForward->CanWallHang() && CurrentMovementInput > 0.f)
+			{
+				MovementState = EMoveState::Move_Wall;
+			}
+			else
+			{
+				/* Go back to Air mode, when we release the Input */
+				MovementState = EMoveState::MOVE_Air;
+			}
+		}
+	}
 }
 
 //---------------------------------
@@ -185,6 +348,8 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInput->BindAction(IA_Jump, ETriggerEvent::Completed, this, &APlayerCharacter2D::StopJump);
 		
 		EnhancedInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter2D::Attack);
+
+		EnhancedInput->BindAction(IA_Dash, ETriggerEvent::Started, this, &APlayerCharacter2D::Dash);
 	}
 }
 
@@ -224,15 +389,27 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
+	if(bIsImmortal || !bIsAlive)
+	{
+		return 0;
+	}
+	
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	
 	if(Health - ActualDamage > 0.f)
 	{
 		Health -= ActualDamage;
+		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
+
+		bIsStunned = true;
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &APlayerCharacter2D::OnStunTimerTimeOut, StunDuration, false);
 	}
 	else
 	{
 		bIsAlive = false;
+		bCanAttack = false;
+
+		GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
 		Health = 0.f;
 	}
 

@@ -5,16 +5,26 @@
 #include "PaperZDAnimInstance.h"
 #include "PaperZDCharacter.h"
 #include "AnimSequences/PaperZDAnimSequence.h"
-#include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "PlayerCharacter2D.generated.h"
 
+class UWallDetectorComponent;
 class UInputAction;
 class UInputMappingContext;
+class UBoxComponent;
+class USpringArmComponent;
+class UCameraComponent;
+
 /**
  * 
  */
+
+UENUM()
+enum class EMoveState
+{
+	MOVE_Ground,
+	MOVE_Air,
+	Move_Wall
+};
 
 UCLASS()
 class PROJECT_API APlayerCharacter2D : public APaperZDCharacter
@@ -25,34 +35,21 @@ public:
 	APlayerCharacter2D();
 
 private:
-	UFUNCTION()
-	void CalculateDirection(const float ActionValue);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
+		bool bCanWallJump{false};
 	
-	UFUNCTION()
-	void Move(const FInputActionValue& InputActionValue);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
+		float WallTraceDistance{300.f};
 
-	UFUNCTION()
-	void StartJump(const FInputActionValue& InputActionValue);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
+		float WallJumpForce{500.f};
 
-	UFUNCTION()
-	void StopJump(const FInputActionValue& InputActionValue);
-
-	UFUNCTION()
-	void Attack(const FInputActionValue& InputActionValue);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Movement, meta=(AllowPrivateAccess = "true"))
+		float WallHangDistance {30.f};
 	
-	/* Called when the PaperZD animation override ends.*/
-	UFUNCTION()
-	void OnAttackOverrideEndSequence(bool Completed);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Skills, meta=(AllowPrivateAccess = "true"))
+		float DashCooldownTime{2.f};
 	
-	UFUNCTION()
-	virtual void OnJumped_Implementation() override;
-	
-	virtual void BeginPlay() override;
-	
-	virtual void Tick(float DeltaSeconds) override;
-	
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UCameraComponent> CameraComponent;
 
@@ -71,6 +68,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UInputAction> IA_Attack;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+		TObjectPtr<UInputAction> IA_Dash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+		float DashForce{1000.f};
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
 
@@ -82,16 +85,37 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UBoxComponent> AttackCollisionBox;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	TObjectPtr<UWallDetectorComponent> WallDetectorComponentForward;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
-	float Health{30.f};
+		float Health{30.f};
 
-	UFUNCTION()
-	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
-										int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float StunDuration{.3f};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float WallHangDuration{2.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float WallHangRange{30.f};
+	
 	UPROPERTY(VisibleAnywhere, Category=Gamneplay)
 		FVector LastJumpLocation{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+		float CurrentMovementInput {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+		float CustomGravityScale {2.f};
+
+	FTimerHandle DashTimerDelegateHandle;
+	FTimerHandle StunTimerHandle;
+	FTimerHandle WallJumpTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
+	EMoveState MovementState;
+	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		bool bIsAlive {true};
@@ -101,12 +125,67 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
 		bool bCanAttack{true};
-	
-	UFUNCTION()
-	FVector GetLastJumpLocation() const {return LastJumpLocation;}
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+		bool bCanDash{true};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Attack)
+		bool bIsImmortal{false};
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category=Gameplay)
+		bool bIsStunned{false};
+
 	UFUNCTION(BlueprintCallable)
 	void ToggleAttackCollisionBox(bool Enabled);
+
+	//getters
+	FORCEINLINE FVector GetLastJumpLocation() const {return LastJumpLocation; }
+
+	FORCEINLINE FRotator GetCurrentRotation() const {return Controller->GetControlRotation();}
 	
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+private:
+	virtual void BeginPlay() override;
+	
+	/* Called when the Dash is ready to be used again */
+	UFUNCTION()
+	void OnDashTimerTimeOut();
+
+	virtual void Falling() override;
+
+	virtual void Landed(const FHitResult& Hit) override;
+	
+	void WallJump();
+	
+	/* Called when the PaperZD animation override ends.*/
+	UFUNCTION()
+	void OnAttackOverrideEndSequence(bool Completed);
+	
+	UFUNCTION()
+	virtual void OnJumped_Implementation() override;
+
+	void OnWallJumpTimerTimeOut();
+
+	void OnStunTimerTimeOut();
+
+	UFUNCTION()
+	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
+										int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	
+	virtual void Tick(float DeltaSeconds) override;
+	
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	void SetDirectionFacing(const float ActionValue);
+	
+	void Move(const FInputActionValue& InputActionValue);
+	
+	void StartJump(const FInputActionValue& InputActionValue);
+	
+	void StopJump(const FInputActionValue& InputActionValue);
+	
+	void Attack(const FInputActionValue& InputActionValue);
+	
+	void Dash(const FInputActionValue& InputActionValue);
 }; 

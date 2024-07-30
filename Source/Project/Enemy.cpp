@@ -4,11 +4,11 @@
 #include "Enemy.h"
 
 #include "PlayerCharacter2D.h"
+#include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
-
 
 
 AEnemy::AEnemy()
@@ -25,7 +25,6 @@ AEnemy::AEnemy()
 
 	HealthDisplay = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Health Display"));
 	HealthDisplay->SetupAttachment(RootComponent);
-	HealthDisplay->bHiddenInGame = true;
 }
 
 //---------------------------------
@@ -40,6 +39,7 @@ void AEnemy::BeginPlay()
 	OnAttackAnimationOverrideDelegate.BindUObject(this, &AEnemy::OnAttackSequenceEnd);
 	ToggleAttackCollisionBox(false);
 
+	HealthDisplay->bHiddenInGame = true;
 	UpdateHealth(Health);
 }
 
@@ -252,9 +252,10 @@ void AEnemy::Tick(float DeltaTime)
 		{
 			if(GetVerticalDistanceTo(PlayerTarget) < StoppingDistance)
 			{
-				/*GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
-					TEXT("Attacking!"));*/
-				Attack();
+				if(PlayerTarget->bIsAlive)
+				{
+					Attack();
+				}
 			}
 		}
 		
