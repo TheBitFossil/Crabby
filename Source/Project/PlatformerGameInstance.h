@@ -13,5 +13,11 @@ UCLASS()
 class PROJECT_API UPlatformerGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float PlayerHP{350.f};
+
+	void SetPlayerHP(float NewHP);
 	
 };

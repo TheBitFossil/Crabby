@@ -7,6 +7,7 @@
 #include "AnimSequences/PaperZDAnimSequence.h"
 #include "PlayerCharacter2D.generated.h"
 
+class UPlatformerGameInstance;
 class UWallDetectorComponent;
 class UInputAction;
 class UInputMappingContext;
@@ -130,6 +131,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UPlayerHUD> PlayerHudWidget;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+		TObjectPtr<UPlatformerGameInstance> GameInstance;
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)

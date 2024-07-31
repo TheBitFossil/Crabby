@@ -3,3 +3,7 @@
 
 #include "PlatformerGameInstance.h"
 
+void UPlatformerGameInstance::SetPlayerHP(float NewHP)
+{
+	PlayerHP = NewHP;
+}

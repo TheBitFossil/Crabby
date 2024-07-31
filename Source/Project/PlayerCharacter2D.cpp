@@ -6,6 +6,7 @@
 #include "Enemy.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "PlatformerGameInstance.h"
 #include "WallDetectorComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
@@ -57,6 +58,13 @@ void APlayerCharacter2D::BeginPlay()
 	GetCharacterMovement()->GravityScale = CustomGravityScale;
 	ToggleAttackCollisionBox(false);
 
+	// Get the Health from our GameInstance, because it will persist
+	GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
+	if(GameInstance)
+	{
+		Health = GameInstance->PlayerHP;
+	}
+	
 	if(PlayerHudClass)
 	{
 		PlayerHudWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHudClass);
@@ -510,7 +518,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	// Cache this for the delayed HealthBar
+	// Cache this for the delayed HealthBar. Get the Value from GameInstance
 	LastHealth = Health;
 	DamageTaken = ActualDamage;
 	
@@ -520,6 +528,9 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
 
 		bIsStunned = true;
+
+		// Update GameInstance
+		GameInstance->SetPlayerHP(Health);
 		
 		GetWorldTimerManager().SetTimer(
 			StunTimerDelegate,
@@ -537,6 +548,9 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
 		Health = 0.f;
 		LastHealth = 0.f;
+
+		// Update GameInstance
+		GameInstance->SetPlayerHP(Health);
 	}
 
 	// Set Instant Damage
