@@ -76,17 +76,23 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 		TObjectPtr<UWallDetectorComponent> WallDetectorComponentForward;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
 		float Health{30.f};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+		float MaxHealth{100.f};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
 		float LastHealth{};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+		float DamageTaken {};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
 		float HealthTickRate{1.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
-		float HealthRemovePerTick{.01f};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+		float HealthRemovePerTick{20.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float StunDuration{.3f};
@@ -208,4 +214,5 @@ private:
 	
 	void ToggleGravity(const bool Enabled) const;
 
+	float NormalizeValue(const float& CurrentValue, const float& MaxValue);
 }; 

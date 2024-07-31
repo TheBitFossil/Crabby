@@ -220,6 +220,16 @@ void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 	}
 }
 
+
+//---------------------------------
+/*
+ * Used for ProgressBars to fit Values bigger than 1
+ */
+float APlayerCharacter2D::NormalizeValue(const float& CurrentValue, const float& MaxValue)
+{
+	return FMath::Clamp(CurrentValue / MaxValue, 0.f, 1.f);
+}
+
 //---------------------------------
 
 void APlayerCharacter2D::OnDashTimerTimeOut()
@@ -326,15 +336,40 @@ void APlayerCharacter2D::OnStunTimerTimeOut()
 
 void APlayerCharacter2D::OnHealthTickTimeout()
 {
+	// Calculate the damage to remove per tick as a percentage of the initial damage
+	const float DamagePerTick = DamageTaken * (HealthRemovePerTick / 100.f);
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
+		FString::Printf(TEXT("DMG: %f"), DamagePerTick));
+	
 	if(LastHealth > Health)
 	{
-		LastHealth -= HealthRemovePerTick;
-		float Percent = FMath::Clamp(LastHealth / 100.f, 0.f, 1.f);
+		// remove the percentage
+		float NewHealth = LastHealth - DamagePerTick;
+		if(NewHealth < Health)
+		{
+			NewHealth = Health;
+		}
+
+		const float Percent = NormalizeValue(NewHealth, MaxHealth);
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
+			FString::Printf(TEXT("HP %: %f"), Percent));
+
 		PlayerHudWidget->HealthProgressBarDelayed->SetPercent(Percent);
+		PlayerHudWidget->SetHealth(NewHealth);
+	
+		LastHealth = NewHealth;
+
+		// Stop Timer early if we already reached the Value
+		if(LastHealth <= NewHealth)
+		{
+			GetWorldTimerManager().ClearTimer(HealthTickDelegate);
+		}
+		
+		GetWorldTimerManager().SetTimer(HealthTickDelegate, this, &APlayerCharacter2D::OnHealthTickTimeout,
+												1.f, false, HealthTickRate);
 	}
-	else if(LastHealth <= Health)
+	else
 	{
-		LastHealth = Health;
 		GetWorldTimerManager().ClearTimer(HealthTickDelegate);
 	}
 }
@@ -360,7 +395,6 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 				CMC->Velocity = FVector::Zero();
 			}
 		}
-
 	}
 }
 
@@ -463,7 +497,10 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	// Cache this for the delayed HealthBar
 	LastHealth = Health;
+	DamageTaken = ActualDamage;
+	
 	if(Health - ActualDamage > 0.f)
 	{
 		Health -= ActualDamage;
@@ -471,7 +508,9 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 		bIsStunned = true;
 		
-		GetWorldTimerManager().SetTimer(StunTimerDelegate, this,
+		GetWorldTimerManager().SetTimer(
+			StunTimerDelegate,
+			this,
 			&APlayerCharacter2D::OnStunTimerTimeOut,
 			StunDuration,
 			false
@@ -490,11 +529,16 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	// Set Instant Damage
 	const float Percent = FMath::Clamp(Health / 100.f, 0.f, 1.f);
 	PlayerHudWidget->HealthProgressBarInstant->SetPercent(Percent);
-	PlayerHudWidget->SetHealth(Health);
 
 	// Set Delayed Damage
-	GetWorldTimerManager().SetTimer(HealthTickDelegate, this, &APlayerCharacter2D::OnHealthTickTimeout,
-											1.f, true, HealthTickRate);
+	GetWorldTimerManager().SetTimer(
+		HealthTickDelegate,
+		this,
+		&APlayerCharacter2D::OnHealthTickTimeout,
+		1.f,
+		false,
+		HealthTickRate
+	);
 	
 	return ActualDamage;
 }
