@@ -13,7 +13,7 @@ class UInputMappingContext;
 class UBoxComponent;
 class USpringArmComponent;
 class UCameraComponent;
-
+class UPlayerHUD;
 /**
  * 
  */
@@ -79,6 +79,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float Health{30.f};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float LastHealth{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float HealthTickRate{1.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float HealthRemovePerTick{.01f};
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float StunDuration{.3f};
 
@@ -102,13 +111,20 @@ private:
 	UPROPERTY(VisibleAnywhere, Category=Gameplay)
 		FVector LastJumpLocation{};
 	
-	FTimerHandle DashTimerDelegateHandle;
-	FTimerHandle StunTimerHandle;
-	FTimerHandle WallJumpTimerHandle;
+	FTimerHandle DashTimerDelegate;
+	FTimerHandle StunTimerDelegate;
+	FTimerHandle WallJumpTimerDelegate;
+	FTimerHandle HealthTickDelegate;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
+		EMoveState MovementState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=UI, meta=(AllowPrivateAccess = "true"))
+		TSubclassOf<UPlayerHUD> PlayerHudClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
-	EMoveState MovementState;
-
+		TObjectPtr<UPlayerHUD> PlayerHudWidget;
+	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		bool bIsAlive {true};
@@ -140,7 +156,7 @@ public:
 	FORCEINLINE EMoveState GetCurrentMoveState() const {return MovementState;}
 	
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
-								AController* EventInstigator, AActor* DamageCauser) override;
+	                         AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
 	virtual void BeginPlay() override;
@@ -164,6 +180,8 @@ private:
 
 	void OnStunTimerTimeOut();
 
+	void OnHealthTickTimeout();
+	
 	UFUNCTION()
 	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
 										int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

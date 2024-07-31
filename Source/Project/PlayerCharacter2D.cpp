@@ -7,12 +7,15 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "WallDetectorComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "PlayerHUD.h"
+#include "Components/ProgressBar.h"
 
 APlayerCharacter2D::APlayerCharacter2D()
 {
@@ -53,6 +56,20 @@ void APlayerCharacter2D::BeginPlay()
 
 	GetCharacterMovement()->GravityScale = CustomGravityScale;
 	ToggleAttackCollisionBox(false);
+
+	if(PlayerHudClass)
+	{
+		PlayerHudWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHudClass);
+		if(PlayerHudWidget)
+		{
+			PlayerHudWidget->AddToPlayerScreen();
+
+			PlayerHudWidget->SetDiamonds(10);
+			PlayerHudWidget->SetHealth(Health);
+			PlayerHudWidget->SetLevel(1);
+			PlayerHudWidget->SetDashCoolDown(DashCooldownTime);
+		}
+	}
 }
 
 //---------------------------------
@@ -172,7 +189,7 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	bCanDash = false;
 	bIsImmortal = true;
 	
-	GetWorldTimerManager().SetTimer(DashTimerDelegateHandle,
+	GetWorldTimerManager().SetTimer(DashTimerDelegate,
 		this,
 		&APlayerCharacter2D::OnDashTimerTimeOut,
 		1.f,
@@ -209,6 +226,8 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 {
 	bCanDash = true;
 	bIsImmortal = false;
+	
+	PlayerHudWidget->SetDashCoolDown(DashCooldownTime);
 }
 
 //---------------------------------
@@ -242,7 +261,7 @@ void APlayerCharacter2D::WallJump()
 	//SetDirectionFacing(-1);								// Turn around
 
 	GetWorldTimerManager().SetTimer(
-		WallJumpTimerHandle,
+		WallJumpTimerDelegate,
 		this,
 		&APlayerCharacter2D::OnWallJumpTimerTimeOut,
 		WallHangDuration,
@@ -305,6 +324,23 @@ void APlayerCharacter2D::OnStunTimerTimeOut()
 
 //---------------------------------
 
+void APlayerCharacter2D::OnHealthTickTimeout()
+{
+	if(LastHealth > Health)
+	{
+		LastHealth -= HealthRemovePerTick;
+		float Percent = FMath::Clamp(LastHealth / 100.f, 0.f, 1.f);
+		PlayerHudWidget->HealthProgressBarDelayed->SetPercent(Percent);
+	}
+	else if(LastHealth <= Health)
+	{
+		LastHealth = Health;
+		GetWorldTimerManager().ClearTimer(HealthTickDelegate);
+	}
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 {
 	if(MovementState == EMoveState::MOVE_Air)
@@ -351,6 +387,16 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 		}
 
 		HandleAirMovement(CMC);
+
+		if(GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate) > 0.f)
+		{
+			const float TimeRemaining = GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate);
+			const float MaxValue = PlayerHudWidget->DashProgressBar->GetPercent();
+			const float Percent = FMath::Clamp(TimeRemaining / MaxValue, 0.f, 1.f);
+
+			PlayerHudWidget->DashProgressBar->SetPercent(Percent);
+			PlayerHudWidget->SetDashCoolDown(Percent);
+		}
 	}
 }
 
@@ -416,7 +462,8 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	}
 	
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
+
+	LastHealth = Health;
 	if(Health - ActualDamage > 0.f)
 	{
 		Health -= ActualDamage;
@@ -424,7 +471,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 		bIsStunned = true;
 		
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this,
+		GetWorldTimerManager().SetTimer(StunTimerDelegate, this,
 			&APlayerCharacter2D::OnStunTimerTimeOut,
 			StunDuration,
 			false
@@ -437,8 +484,18 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 		GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
 		Health = 0.f;
+		LastHealth = 0.f;
 	}
 
+	// Set Instant Damage
+	const float Percent = FMath::Clamp(Health / 100.f, 0.f, 1.f);
+	PlayerHudWidget->HealthProgressBarInstant->SetPercent(Percent);
+	PlayerHudWidget->SetHealth(Health);
+
+	// Set Delayed Damage
+	GetWorldTimerManager().SetTimer(HealthTickDelegate, this, &APlayerCharacter2D::OnHealthTickTimeout,
+											1.f, true, HealthTickRate);
+	
 	return ActualDamage;
 }
 
