@@ -188,6 +188,10 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	LaunchCharacter(DashDirection * DashForce, true, true);
 	bCanDash = false;
 	bIsImmortal = true;
+
+	// Set the Bar to Zero immediately after Dashing
+	PlayerHudWidget->DashProgressBar->SetPercent(0.f);
+	PlayerHudWidget->SetDashCoolDown(0.f);
 	
 	GetWorldTimerManager().SetTimer(DashTimerDelegate,
 		this,
@@ -338,8 +342,10 @@ void APlayerCharacter2D::OnHealthTickTimeout()
 {
 	// Calculate the damage to remove per tick as a percentage of the initial damage
 	const float DamagePerTick = DamageTaken * (HealthRemovePerTick / 100.f);
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
+
+	/*GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
 		FString::Printf(TEXT("DMG: %f"), DamagePerTick));
+	*/
 	
 	if(LastHealth > Health)
 	{
@@ -351,9 +357,10 @@ void APlayerCharacter2D::OnHealthTickTimeout()
 		}
 
 		const float Percent = NormalizeValue(NewHealth, MaxHealth);
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
+		/*GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
 			FString::Printf(TEXT("HP %: %f"), Percent));
-
+		*/
+		
 		PlayerHudWidget->HealthProgressBarDelayed->SetPercent(Percent);
 		PlayerHudWidget->SetHealth(NewHealth);
 	
@@ -400,6 +407,20 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 
 //---------------------------------
 
+void APlayerCharacter2D::UpdateDashBar()
+{
+	if(GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate) > 0.f)
+	{
+		const float TimeRemaining = GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate);
+		const float NormalizedValue = NormalizeValue(TimeRemaining, DashCooldownTime);
+
+		PlayerHudWidget->DashProgressBar->SetPercent(NormalizedValue);
+		PlayerHudWidget->SetDashCoolDown(NormalizedValue);
+	}
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -422,15 +443,7 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 
 		HandleAirMovement(CMC);
 
-		if(GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate) > 0.f)
-		{
-			const float TimeRemaining = GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate);
-			const float MaxValue = PlayerHudWidget->DashProgressBar->GetPercent();
-			const float Percent = FMath::Clamp(TimeRemaining / MaxValue, 0.f, 1.f);
-
-			PlayerHudWidget->DashProgressBar->SetPercent(Percent);
-			PlayerHudWidget->SetDashCoolDown(Percent);
-		}
+		UpdateDashBar();
 	}
 }
 

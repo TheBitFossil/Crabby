@@ -203,7 +203,9 @@ private:
 	void MoveCompleted(const FInputActionValue& InputActionValue);
 
 	void HandleAirMovement(UCharacterMovementComponent* CMC);
-	
+
+	void UpdateDashBar();
+
 	void StartJump(const FInputActionValue& InputActionValue);
 	
 	void StopJump(const FInputActionValue& InputActionValue);
