@@ -31,8 +31,8 @@ bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
 {
 	DetectedWallDistance = MAX_FLT;
 	
-	const FVector StartLocation = GetComponentLocation();
-	const FVector End = StartLocation + GetForwardVector() * TraceDistance;
+	const FVector StartLocation = GetOwner()->GetActorLocation();
+	const FVector End = StartLocation + GetOwner()->GetActorForwardVector() * TraceDistance;
 	FCollisionQueryParams QueryParams;
 	
 	if(IgnoredActor)
@@ -54,7 +54,7 @@ bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
 				//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,
 				//						Hit.Component->GetName());
 
-				const float Distance = FVector::Dist(GetComponentLocation(), Hit.ImpactPoint);
+				const float Distance = FVector::Dist(GetOwner()->GetActorLocation(), Hit.ImpactPoint);
 				GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,
 										FString::Printf(TEXT("Distance: %f"), Distance));
 

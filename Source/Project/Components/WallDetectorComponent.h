@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/SceneComponent.h"
+#include "Components/ActorComponent.h"
 #include "WallDetectorComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PROJECT_API UWallDetectorComponent : public USceneComponent
+class PROJECT_API UWallDetectorComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -22,7 +21,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TArray<FHitResult> HitResults;
+		TArray<FHitResult> HitResults;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float TraceDistance{32.f};
@@ -31,5 +30,4 @@ public:
 		float DetectedWallDistance{};
 	
 	bool IsDetectingWall(const AActor* IgnoredActor = nullptr);
-	
 };
