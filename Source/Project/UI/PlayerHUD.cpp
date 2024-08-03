@@ -34,3 +34,11 @@ void UPlayerHUD::SetHealth(const int Amount) const
 	const FString Msg = FString::Printf(TEXT("HP: %d"), Amount);
 	HealthTxt->SetText(FText::FromString(Msg));
 }
+
+//---------------------------------
+
+void UPlayerHUD::SetStamina(const float Val)
+{
+	const FString Msg = FString::Printf(TEXT("Stamina: %f"), Val);
+	StaminaTxt->SetText(FText::FromString(Msg));
+}

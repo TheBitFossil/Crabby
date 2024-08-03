@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "PaperZDAnimInstance.h"
 #include "PaperZDCharacter.h"
-#include "Components/SphereComponent.h"
 #include "Enemy.generated.h"
 
+class ALootItem;
 class UBoxComponent;
-class ALootDrop;
+class USphereComponent;
 class APlayerCharacter2D;
 class UTextRenderComponent;
 
@@ -69,7 +69,7 @@ private:
 		TObjectPtr<UBoxComponent> AttackCollisionBox;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
-		TSubclassOf<ALootDrop> LootDrop;
+		TSubclassOf<ALootItem> Loot;
 
 	/* If Player is further than JumpThreshold vertically. Jump  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))

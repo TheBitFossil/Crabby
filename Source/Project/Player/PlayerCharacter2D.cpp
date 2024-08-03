@@ -1,22 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "PlayerCharacter2D.h"
-
-#include "Enemy.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "PlatformerGameInstance.h"
-#include "WallDetectorComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/ProgressBar.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerHUD.h"
-#include "Components/ProgressBar.h"
+#include "Project/Ai/Enemy.h"
+#include "Project/Components/ItemDetectorComponent.h"
+#include "Project/Components/WallDetectorComponent.h"
+#include "Project/Core/PlatformerGameInstance.h"
+#include "Project/UI/PlayerHUD.h"
+
 
 APlayerCharacter2D::APlayerCharacter2D()
 {
@@ -31,8 +31,8 @@ APlayerCharacter2D::APlayerCharacter2D()
 	AttackCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Collision Detector"));
 	AttackCollisionBox->SetupAttachment(RootComponent);
 
-	WallDetectorComponentForward = CreateDefaultSubobject<UWallDetectorComponent>(TEXT("Wall Detector"));
-	WallDetectorComponentForward->SetupAttachment(RootComponent);
+	ItemDetectorComponent = CreateDefaultSubobject<UItemDetectorComponent>(TEXT("Item Detector"));
+	WallDetectorFront = CreateDefaultSubobject<UWallDetectorComponent>(TEXT("Wall Detector"));
 }
 
 //---------------------------------
@@ -41,7 +41,7 @@ void APlayerCharacter2D::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(APlayerController* PC = static_cast<APlayerController*>(GetController()))
+	if(APlayerController* PC = Cast<APlayerController>(Controller))
 	{
 		// Setup some bindings - we are currently using Enhanced Input and just using some input actions assigned in editor for simplicity
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -54,30 +54,13 @@ void APlayerCharacter2D::BeginPlay()
 	/* notify when animation is complete*/
 	OnAttackOverrideEndDelegate.BindUObject(this, &APlayerCharacter2D::OnAttackOverrideEndSequence);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter2D::OnAttackCollisionBeginOverlap);
-
-	GetCharacterMovement()->GravityScale = CustomGravityScale;
 	ToggleAttackCollisionBox(false);
-
-	// Get the Health from our GameInstance, because it will persist
-	GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
-	if(GameInstance)
-	{
-		Health = GameInstance->PlayerHP;
-	}
 	
-	if(PlayerHudClass)
-	{
-		PlayerHudWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHudClass);
-		if(PlayerHudWidget)
-		{
-			PlayerHudWidget->AddToPlayerScreen();
+	GetCharacterMovement()->GravityScale = CustomGravityScale;
 
-			PlayerHudWidget->SetDiamonds(10);
-			PlayerHudWidget->SetHealth(Health);
-			PlayerHudWidget->SetLevel(1);
-			PlayerHudWidget->SetDashCoolDown(DashCooldownTime);
-		}
-	}
+	GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
+
+	InitUserInterface();
 }
 
 //---------------------------------
@@ -123,7 +106,6 @@ void APlayerCharacter2D::MoveCompleted(const FInputActionValue& InputActionValue
 	{
 		return;
 	}
-	
 	
 	FRotator LastRotation = GetControlRotation();
 	Controller->SetControlRotation(FRotator(LastRotation.Pitch, LastRotation.Yaw, LastRotation.Roll));
@@ -187,13 +169,24 @@ void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 {
-	if(!bCanDash)
+	UCharacterMovementComponent* CMC = GetCharacterMovement();
+	if(!CMC || !bCanDash)
 	{
 		return;
 	}
 
 	const FVector DashDirection = GetActorForwardVector();
-	LaunchCharacter(DashDirection * DashForce, true, true);
+	const float AirDashForce = DashForce / 2.f;
+	if(CMC->IsMovingOnGround())
+	{
+		LaunchCharacter(DashDirection * DashForce, true, true);
+	}
+	else
+	{
+		// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
+		LaunchCharacter(DashDirection * AirDashForce, true, true);
+	}
+	
 	bCanDash = false;
 	bIsImmortal = true;
 
@@ -206,7 +199,7 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 		&APlayerCharacter2D::OnDashTimerTimeOut,
 		1.f,
 		false,
-		DashCooldownTime
+		GameInstance->PlayerData.DashCoolDown
 	);
 }
 
@@ -232,6 +225,26 @@ void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 	}
 }
 
+//---------------------------------
+
+void APlayerCharacter2D::EquipSlot(const FInputActionValue& InputActionValue)
+{
+	bEquippedSlot01 = !bEquippedSlot01;
+	if(bEquippedSlot01)
+	{
+		GetAnimInstance()->JumpToNode(FName("JumpBow_01"));
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::BowDraw(const FInputActionValue& InputActionValue)
+{
+	if(bEquippedSlot01)
+	{
+		
+	}
+}
 
 //---------------------------------
 /*
@@ -249,7 +262,7 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 	bCanDash = true;
 	bIsImmortal = false;
 	
-	PlayerHudWidget->SetDashCoolDown(DashCooldownTime);
+	PlayerHudWidget->SetDashCoolDown(GameInstance->PlayerData.DashCoolDown);
 }
 
 //---------------------------------
@@ -279,8 +292,6 @@ void APlayerCharacter2D::WallJump()
 	ToggleGravity(false);
 
 	LaunchCharacter(JumpDirection, true, true);	// Get some distance from the Wall
-
-	//SetDirectionFacing(-1);								// Turn around
 
 	GetWorldTimerManager().SetTimer(
 		WallJumpTimerDelegate,
@@ -348,44 +359,49 @@ void APlayerCharacter2D::OnStunTimerTimeOut()
 
 void APlayerCharacter2D::OnHealthTickTimeout()
 {
-	// Calculate the damage to remove per tick as a percentage of the initial damage
-	const float DamagePerTick = DamageTaken * (HealthRemovePerTick / 100.f);
-
-	/*GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
-		FString::Printf(TEXT("DMG: %f"), DamagePerTick));
-	*/
-	
-	if(LastHealth > Health)
+	if(GameInstance)
 	{
-		// remove the percentage
-		float NewHealth = LastHealth - DamagePerTick;
-		if(NewHealth < Health)
-		{
-			NewHealth = Health;
-		}
+		// Calculate the damage to remove per tick as a percentage of the initial damage
+		const float DamagePerTick = DamageTaken * (HealthRemovePerTick / 100.f);
 
-		const float Percent = NormalizeValue(NewHealth, MaxHealth);
-		/*GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
-			FString::Printf(TEXT("HP %: %f"), Percent));
-		*/
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
+			FString::Printf(TEXT("DMG: %f"), DamagePerTick));
 		
-		PlayerHudWidget->HealthProgressBarDelayed->SetPercent(Percent);
-		PlayerHudWidget->SetHealth(NewHealth);
-	
-		LastHealth = NewHealth;
 
-		// Stop Timer early if we already reached the Value
-		if(LastHealth <= NewHealth)
+		// Slowly remove HP delayed until we reach current HP
+		if(LastHealth > GameInstance->PlayerData.HP)
+		{
+			float HP = LastHealth - DamagePerTick;
+			if(HP < GameInstance->PlayerData.HP)
+			{
+				HP = GameInstance->PlayerData.HP;
+			}
+
+			// Fit the current HP inside the Progress-Bar
+			const float Percent = NormalizeValue(HP, GameInstance->PlayerData.MaxHP);
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
+				FString::Printf(TEXT("HP: %f"), Percent));
+			
+			UpdateHPDelayed(Percent);
+			// As Text
+			PlayerHudWidget->SetHealth(HP);
+
+			// Set HP for next Tick
+			LastHealth = HP;
+
+			// Stop Timer early if we already reached the Value
+			if(LastHealth <= GameInstance->PlayerData.HP)
+			{
+				GetWorldTimerManager().ClearTimer(HealthTickDelegate);
+			}
+			
+			GetWorldTimerManager().SetTimer(HealthTickDelegate, this, &APlayerCharacter2D::OnHealthTickTimeout,
+													1.f, false, HealthTickRate);
+		}
+		else
 		{
 			GetWorldTimerManager().ClearTimer(HealthTickDelegate);
 		}
-		
-		GetWorldTimerManager().SetTimer(HealthTickDelegate, this, &APlayerCharacter2D::OnHealthTickTimeout,
-												1.f, false, HealthTickRate);
-	}
-	else
-	{
-		GetWorldTimerManager().ClearTimer(HealthTickDelegate);
 	}
 }
 
@@ -398,10 +414,10 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 		ToggleGravity(true);
 		
 		/* If in range and we press forward direction. Change State*/
-		if(WallDetectorComponentForward->IsDetectingWall(this))
+		if(WallDetectorFront->IsDetectingWall(this))
 		{
 			// Are we pressing in forward direction , which means we are clinging to the wall
-			const float& DistanceToWall = WallDetectorComponentForward->DetectedWallDistance;
+			const float& DistanceToWall = WallDetectorFront->DetectedWallDistance;
 			if (DistanceToWall < WallHangDistance && (CMC->GetLastInputVector().X > 0.f || CMC->GetLastInputVector().X < 0.f))
 			{
 				MovementState = EMoveState::MOVE_Wall;
@@ -415,15 +431,18 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 
 //---------------------------------
 
-void APlayerCharacter2D::UpdateDashBar()
+void APlayerCharacter2D::UpdateDashBar(float Val)
 {
 	if(GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate) > 0.f)
 	{
 		const float TimeRemaining = GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate);
-		const float NormalizedValue = NormalizeValue(TimeRemaining, DashCooldownTime);
+		const float NormalizedValue = NormalizeValue(TimeRemaining, Val);
 
 		PlayerHudWidget->DashProgressBar->SetPercent(NormalizedValue);
-		PlayerHudWidget->SetDashCoolDown(NormalizedValue);
+	}
+	else
+	{
+		PlayerHudWidget->DashProgressBar->SetPercent(Val);
 	}
 }
 
@@ -451,7 +470,7 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 
 		HandleAirMovement(CMC);
 
-		UpdateDashBar();
+		UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
 	}
 }
 
@@ -472,6 +491,11 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter2D::Attack);
 
 		EnhancedInput->BindAction(IA_Dash, ETriggerEvent::Started, this, &APlayerCharacter2D::Dash);
+
+		EnhancedInput->BindAction(IA_Equip_Slot_01, ETriggerEvent::Started, this, &APlayerCharacter2D::EquipSlot);
+
+		EnhancedInput->BindAction(IA_Bow_Draw, ETriggerEvent::Started, this, &APlayerCharacter2D::BowDraw);
+		EnhancedInput->BindAction(IA_Bow_Draw, ETriggerEvent::Completed, this, &APlayerCharacter2D::BowDraw);
 	}
 }
 
@@ -482,7 +506,7 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 {
 	if(OtherActor && OtherActor != this)
 	{
-		AEnemy* Enemy = static_cast<AEnemy*>(OtherActor);
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		if(Enemy && Enemy->bIsAlive)
 		{
 			FRadialDamageEvent RadialDamageEvent;
@@ -519,18 +543,18 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// Cache this for the delayed HealthBar. Get the Value from GameInstance
-	LastHealth = Health;
+	LastHealth = GameInstance->PlayerData.HP;
 	DamageTaken = ActualDamage;
 	
-	if(Health - ActualDamage > 0.f)
+	const float HealthLeft = GameInstance->PlayerData.HP - ActualDamage;
+	if(HealthLeft > 0.f)
 	{
-		Health -= ActualDamage;
+		GameInstance->RemoveHealth(ActualDamage);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("GI HP: %f"), GameInstance->PlayerData.HP));
+		
 		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
 
 		bIsStunned = true;
-
-		// Update GameInstance
-		GameInstance->SetPlayerHP(Health);
 		
 		GetWorldTimerManager().SetTimer(
 			StunTimerDelegate,
@@ -546,18 +570,16 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		bCanAttack = false;
 
 		GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
-		Health = 0.f;
-		LastHealth = 0.f;
 
-		// Update GameInstance
-		GameInstance->SetPlayerHP(Health);
+		GameInstance->SetHP(0.f);
+		LastHealth = 0.f;
 	}
 
-	// Set Instant Damage
-	const float Percent = FMath::Clamp(Health / 100.f, 0.f, 1.f);
-	PlayerHudWidget->HealthProgressBarInstant->SetPercent(Percent);
+	// Update the Instant Damage HP Bar
+	const float Percent = NormalizeValue(GameInstance->PlayerData.HP, GameInstance->PlayerData.MaxHP);
+	UpdateHPInstant(Percent);
 
-	// Set Delayed Damage
+	// Start Delayed Damage Tick
 	GetWorldTimerManager().SetTimer(
 		HealthTickDelegate,
 		this,
@@ -571,3 +593,71 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 }
 
 //---------------------------------
+
+void APlayerCharacter2D::InitUserInterface()
+{
+	if(PlayerHudClass)
+	{
+		PlayerHudWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHudClass);
+		if(PlayerHudWidget && GameInstance)
+		{
+			PlayerHudWidget->AddToPlayerScreen();
+			PlayerHudWidget->SetLevel(909);
+
+			// As Percentage
+			const float PercentHealth = NormalizeValue(GameInstance->PlayerData.HP, GameInstance->PlayerData.MaxHP);
+			UpdateHPInstant(PercentHealth);
+			UpdateHPDelayed(PercentHealth);
+
+			const float PercentStamina = NormalizeValue(GameInstance->PlayerData.DashCoolDown, GameInstance->PlayerData.DashCoolDown);
+			UpdateDashBar(PercentStamina);
+
+			// As Text
+			PlayerHudWidget->SetHealth(GameInstance->PlayerData.HP);
+			
+			UpdateStamina(GameInstance->PlayerData.Stamina);
+			UpdateDashCoolDown(GameInstance->PlayerData.DashCoolDown);
+			UpdateCredits(GameInstance->PlayerData.Credits);
+		}
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::UpdateHPInstant(float Val)
+{
+	PlayerHudWidget->HealthProgressBarInstant->SetPercent(Val);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::UpdateHPDelayed(float Val)
+{
+	// As Progress Bar
+	PlayerHudWidget->HealthProgressBarDelayed->SetPercent(Val);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::UpdateStamina(float Val)
+{
+	// TODO:: Implement Stamina which gets used by dashing.
+	PlayerHudWidget->SetStamina(Val);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::UpdateCredits(int32 Val)
+{
+	PlayerHudWidget->SetDiamonds(Val);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::UpdateDashCoolDown(float Val)
+{
+	PlayerHudWidget->SetDashCoolDown(Val);
+}
+
+
+

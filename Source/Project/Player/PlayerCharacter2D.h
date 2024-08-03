@@ -5,8 +5,10 @@
 #include "PaperZDAnimInstance.h"
 #include "PaperZDCharacter.h"
 #include "AnimSequences/PaperZDAnimSequence.h"
+#include "Project/Core/PlatformerGameInstance.h"
 #include "PlayerCharacter2D.generated.h"
 
+class UItemDetectorComponent;
 class UPlatformerGameInstance;
 class UWallDetectorComponent;
 class UInputAction;
@@ -35,87 +37,85 @@ class PROJECT_API APlayerCharacter2D : public APaperZDCharacter
 public:
 	APlayerCharacter2D();
 
-private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Skills, meta=(AllowPrivateAccess = "true"))
-		float DashCooldownTime{2.f};
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TObjectPtr<UCameraComponent> CameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TObjectPtr<USpringArmComponent> SpringArmComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 		TObjectPtr<UInputMappingContext> IMC_Default;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 		TObjectPtr<UInputAction> IA_Move;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 		TObjectPtr<UInputAction> IA_Jump;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 		TObjectPtr<UInputAction> IA_Attack;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 		TObjectPtr<UInputAction> IA_Dash;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-		float DashForce{1000.f};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+		TObjectPtr<UInputAction> IA_Equip_Slot_01;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+		TObjectPtr<UInputAction> IA_Bow_Draw;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack, meta=(AllowPrivateAccess = "true"))
-		float AttackDmg{10.f};
 	
 	FZDOnAnimationOverrideEndSignature OnAttackOverrideEndDelegate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack)
 		TObjectPtr<UBoxComponent> AttackCollisionBox;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
-		TObjectPtr<UWallDetectorComponent> WallDetectorComponentForward;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
-		float Health{30.f};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
-		float MaxHealth{100.f};
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TObjectPtr<UWallDetectorComponent> WallDetectorFront;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TObjectPtr<UItemDetectorComponent> ItemDetectorComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
 		float LastHealth{};
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
 		float DamageTaken {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Attack")
+		float AttackDmg{10.f};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP")
 		float HealthTickRate{1.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP")
 		float HealthRemovePerTick{20.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		float StunDuration{.3f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
+		float DashForce{1000.f};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
 		float WallHangDuration{2.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
 		float WallJumpForce{500.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
 		float WallHangDistance {24.f};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay",
-					meta=(AllowPrivateAccess = "true", ClampMin = "0.1", ClampMax = "4"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement", meta=(ClampMin = "0.1", ClampMax = "4"))
 		float CustomGravityScale {2.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump",
-					meta=(AllowPrivateAccess = "true", ClampMin = "0.1", ClampMax = "4"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(ClampMin = "0.1", ClampMax = "4"))
 		float WallJumpGravityScale {.35f};
 	
-	UPROPERTY(VisibleAnywhere, Category=Gameplay)
+	UPROPERTY(VisibleAnywhere, Category="Gameplay|Movement")
 		FVector LastJumpLocation{};
 	
 	FTimerHandle DashTimerDelegate;
@@ -123,18 +123,21 @@ private:
 	FTimerHandle WallJumpTimerDelegate;
 	FTimerHandle HealthTickDelegate;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		EMoveState MovementState;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=UI, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|UI")
 		TSubclassOf<UPlayerHUD> PlayerHudClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		TObjectPtr<UPlayerHUD> PlayerHudWidget;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
 		TObjectPtr<UPlatformerGameInstance> GameInstance;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Inventory)
+		bool bEquippedSlot01 {false};
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		bool bIsAlive {true};
@@ -197,7 +200,7 @@ private:
 										int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	
 	virtual void Tick(float DeltaSeconds) override;
-
+	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void SetDirectionFacing(const float ActionValue);
@@ -207,9 +210,7 @@ private:
 	void MoveCompleted(const FInputActionValue& InputActionValue);
 
 	void HandleAirMovement(UCharacterMovementComponent* CMC);
-
-	void UpdateDashBar();
-
+	
 	void StartJump(const FInputActionValue& InputActionValue);
 	
 	void StopJump(const FInputActionValue& InputActionValue);
@@ -220,5 +221,23 @@ private:
 	
 	void ToggleGravity(const bool Enabled) const;
 
+	void EquipSlot(const FInputActionValue& InputActionValue);
+	
+	void BowDraw(const FInputActionValue& InputActionValue);
+	
 	float NormalizeValue(const float& CurrentValue, const float& MaxValue);
+
+	void InitUserInterface();
+
+	void UpdateHPInstant(float Val);
+	
+	void UpdateHPDelayed(float Val);
+	
+	void UpdateStamina(float Val);
+	
+	void UpdateCredits(int32 Val);
+
+	void UpdateDashCoolDown(float Val);
+
+	void UpdateDashBar(float Val);
 }; 

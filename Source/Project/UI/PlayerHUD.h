@@ -16,14 +16,10 @@ class PROJECT_API UPlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
 
-
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	TObjectPtr<UTextBlock> DiamondsTxt;
-	
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-    TObjectPtr<UTextBlock> DashCoolDownTxt;
-    	
+	    	
     UPROPERTY(EditAnywhere, meta = (BindWidget))
     TObjectPtr<UTextBlock> LevelTxt;
 
@@ -37,11 +33,27 @@ public:
 	TObjectPtr<UProgressBar> HealthProgressBarDelayed;
 	
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UTextBlock> StaminaTxt;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UProgressBar> StaminaProgressBarInstant;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UProgressBar> StaminaProgressBarDelayed;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UTextBlock> DashCoolDownTxt;
+	
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	TObjectPtr<UProgressBar> DashProgressBar;
 	
 	void SetDiamonds(const int Amount) const;
+	
 	void SetDashCoolDown(const float Value) const;
+	
 	void SetLevel(const int Count) const;
+	
 	void SetHealth(const int Amount) const;
 	
+	void SetStamina(const float Val);
 };

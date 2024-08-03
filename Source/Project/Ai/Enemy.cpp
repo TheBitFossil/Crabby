@@ -3,12 +3,13 @@
 
 #include "Enemy.h"
 
-#include "PlayerCharacter2D.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Project/Player/PlayerCharacter2D.h"
 
 
 AEnemy::AEnemy()
@@ -53,7 +54,7 @@ void AEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 		return;
 	}
 	
-	if(APlayerCharacter2D* Player = static_cast<APlayerCharacter2D*>(OtherActor))
+	if(APlayerCharacter2D* Player = Cast<APlayerCharacter2D>(OtherActor))
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping other: %s"), *Player->GetName());
 		if(!PlayerTarget)
