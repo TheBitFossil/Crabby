@@ -13,77 +13,103 @@ void UPlatformerGameInstance::Init()
 
 //---------------------------------
 
-void UPlatformerGameInstance::SetHP(float Val)
+void UPlatformerGameInstance::SetHealth(const int32& Val)
 {
-	PlayerData.HP = Val;
-	FMath::Clamp(PlayerData.HP, 0, PlayerData.MaxHP);
+	PlayerData.HP = FMath::Clamp(Val, 0, PlayerData.MaxHP);
+
+	HealthChangedDelegate.Broadcast(PlayerData.HP);
 }
 
 //---------------------------------
 
-void UPlatformerGameInstance::AddCredits(int32 Val)
+void UPlatformerGameInstance::RemoveHealth(const int32& ActualDamage)
+{
+	const int32 HitPointsLeft = PlayerData.HP - ActualDamage;
+	PlayerData.HP = FMath::Clamp(HitPointsLeft, 0, PlayerData.MaxHP);
+
+	HealthChangedDelegate.Broadcast(PlayerData.HP);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::RemoveHealthDelayed(const int32& Val)
+{
+	const int32 NewDelayedHealth = PlayerData.HPDelayed - Val;
+	PlayerData.HPDelayed = FMath::Clamp(NewDelayedHealth, 0, PlayerData.HPDelayed);
+
+	HealthDelayChangedDelegate.Broadcast(PlayerData.HPDelayed);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::AddHealth(const int32& Val)
+{
+	const float NewHealth = PlayerData.HP + Val;
+	PlayerData.HP = FMath::Clamp(NewHealth, 0, PlayerData.MaxHP);
+
+	HealthChangedDelegate.Broadcast(PlayerData.HP);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::RemoveStamina(const int32& Val)
+{
+	const float StaminaLeft = PlayerData.SP - Val;
+	PlayerData.SP = FMath::Clamp(StaminaLeft, 0, PlayerData.MaxSP);
+
+	StaminaChangedDelegate.Broadcast(PlayerData.SP);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::RemoveStaminaDelayed(const int32& Val)
+{
+	const float StaminaDelayedLeft = PlayerData.SPDelayed - Val;
+	PlayerData.SPDelayed = FMath::Clamp(StaminaDelayedLeft, 0, PlayerData.MaxSP);
+	
+	StaminaDelayChangedDelegate.Broadcast(PlayerData.SPDelayed);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::AddStamina(const int32& Val)
+{
+	const float StaminaLeft = PlayerData.SP + Val;
+	PlayerData.SP = FMath::Clamp(StaminaLeft, 0, PlayerData.MaxSP);
+
+	StaminaChangedDelegate.Broadcast(PlayerData.SP);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::SetStamina(const int32& Val)
+{
+	PlayerData.SP = FMath::Clamp(Val, 0, PlayerData.MaxSP);
+	
+	StaminaChangedDelegate.Broadcast(PlayerData.SP);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::AddCredits(const int32& Val)
 {
 	PlayerData.Credits += Val;
-}
-
-//---------------------------------
-
-void UPlatformerGameInstance::RemoveStamina(float Val)
-{
-	const float StaminaLeft = PlayerData.Stamina - Val;
-	PlayerData.Stamina = StaminaLeft;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Stamina removed: %f"), PlayerData.Stamina));
-}
-
-//---------------------------------
-
-void UPlatformerGameInstance::AddStamina(float Val)
-{
-	const float StaminaLeft = PlayerData.Stamina + Val;
-	if(StaminaLeft > PlayerData.MaxStamina)
-	{
-		PlayerData.Stamina = PlayerData.MaxStamina;
-	}
-	else
-	{
-		PlayerData.Stamina = StaminaLeft;
-	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stamina added: %f"),PlayerData.Stamina));
-}
-
-//---------------------------------
-
-void UPlatformerGameInstance::SetStamina(int Val)
-{
-	PlayerData.Stamina = Val;
-	FMath::Clamp(PlayerData.Stamina, 0, PlayerData.MaxStamina);
-}
-
-//---------------------------------
-
-void UPlatformerGameInstance::RemoveHealth(float ActualDamage)
-{
-	const float HitPointsLeft = PlayerData.HP - ActualDamage;
-	PlayerData.HP = HitPointsLeft;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Health removed: %f"), PlayerData.HP));
-}
-
-//---------------------------------
-
-void UPlatformerGameInstance::AddHealth(float Health)
-{
-	const float HitPointsLeft = PlayerData.HP + Health;
-	if(HitPointsLeft > PlayerData.MaxHP)
-	{
-		PlayerData.HP = PlayerData.MaxHP;
-	}
-	else
-	{
-		PlayerData.HP = HitPointsLeft;
-	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-		FString::Printf(TEXT("Health now at: %f"), PlayerData.HP));
+	CreditsChangedDelegate.Broadcast(PlayerData.Credits);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::UpdateDashBar(const float& CurrentDashTimer)
+{
+	DashBarChangedDelegate.Broadcast(CurrentDashTimer);
+}
+
+//---------------------------------
+
+void UPlatformerGameInstance::ResetDashBar()
+{
+	DashBarChangedDelegate.Broadcast(0.f);
 }
 
 //---------------------------------
@@ -102,8 +128,6 @@ void UPlatformerGameInstance::OnItemCollected(const ALootItem* ItemCollected, co
 		AddCredits(ItemCollected->GetItemData().Credits);
 		break;
 	}
-
-	// Update HUD Class
 }
 
 //---------------------------------
@@ -118,3 +142,4 @@ void UPlatformerGameInstance::RegisterItemSpawner(AItemSpawner* ItemSpawner)
 		ItemSpawner->bAllowSpawn = true;
 	}
 }
+

@@ -8,6 +8,7 @@
 #include "Project/Core/PlatformerGameInstance.h"
 #include "PlayerCharacter2D.generated.h"
 
+class ABaseHUD;
 class UItemDetectorComponent;
 class UPlatformerGameInstance;
 class UWallDetectorComponent;
@@ -78,27 +79,57 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TObjectPtr<UItemDetectorComponent> ItemDetectorComponent;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
-		float LastHealth{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=UI)
+		TObjectPtr<ABaseHUD> BaseHUD;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
-		float DamageTaken {};
+		int32 LastHealth{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
+		int32 LastStamina{};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
+		int32 DamageTaken {};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Attack")
 		float AttackDmg{10.f};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
 		float HealthTickRate{1.f};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|HP")
-		float HealthRemovePerTick{20.f};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
+		int32 HealthRemovePerTick{20};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
+		float StaminaTickRate{1.f};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
+		int32 StaminaRemovePerTick{20};
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		float StunDuration{.3f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		float DashForce{1000.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
+		float DashCoolDownTickRate{.2f};		// Visual Update Rate
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
+		float DashCoolDownTickAmount{0.1f};		// Amount added per Tick 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
+		float CurrentDashTimer{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
+		int32 StaminaRegenAmount{10};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
+		float StaminaRegenTickRate{1.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
+		int32 StaminaCostDash{25};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
 		float WallHangDuration{2.f};
@@ -117,20 +148,17 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, Category="Gameplay|Movement")
 		FVector LastJumpLocation{};
-	
+
 	FTimerHandle DashTimerDelegate;
 	FTimerHandle StunTimerDelegate;
+	FTimerHandle StaminaRegenDelegate;
 	FTimerHandle WallJumpTimerDelegate;
+
 	FTimerHandle HealthTickDelegate;
+	FTimerHandle StaminaTickDelegate;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		EMoveState MovementState;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|UI")
-		TSubclassOf<UPlayerHUD> PlayerHudClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
-		TObjectPtr<UPlayerHUD> PlayerHudWidget;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
 		TObjectPtr<UPlatformerGameInstance> GameInstance;
@@ -174,10 +202,6 @@ public:
 private:
 	virtual void BeginPlay() override;
 
-	/* Called when the Dash is ready to be used again */
-	UFUNCTION()
-	void OnDashTimerTimeOut();
-
 	virtual void Landed(const FHitResult& Hit) override;
 	
 	void WallJump();
@@ -194,6 +218,13 @@ private:
 	void OnStunTimerTimeOut();
 
 	void OnHealthTickTimeout();
+
+	void OnStaminaTickTimeOut();
+	
+	/* Called when the Dash is ready to be used again */
+	void OnDashTimerTimeOut();
+	
+	void OnStaminaRegenTimeOut();
 	
 	UFUNCTION()
 	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
@@ -218,26 +249,12 @@ private:
 	void Attack(const FInputActionValue& InputActionValue);
 	
 	void Dash(const FInputActionValue& InputActionValue);
-	
+		
 	void ToggleGravity(const bool Enabled) const;
 
 	void EquipSlot(const FInputActionValue& InputActionValue);
 	
 	void BowDraw(const FInputActionValue& InputActionValue);
-	
-	float NormalizeValue(const float& CurrentValue, const float& MaxValue);
 
-	void InitUserInterface();
-
-	void UpdateHPInstant(float Val);
-	
-	void UpdateHPDelayed(float Val);
-	
-	void UpdateStamina(float Val);
-	
-	void UpdateCredits(int32 Val);
-
-	void UpdateDashCoolDown(float Val);
-
-	void UpdateDashBar(float Val);
+	void InitBaseHud();
 }; 

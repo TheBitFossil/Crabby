@@ -3,10 +3,8 @@
 #include "PlayerCharacter2D.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
-#include "Components/ProgressBar.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -15,7 +13,7 @@
 #include "Project/Components/ItemDetectorComponent.h"
 #include "Project/Components/WallDetectorComponent.h"
 #include "Project/Core/PlatformerGameInstance.h"
-#include "Project/UI/PlayerHUD.h"
+#include "Project/UI/BaseHUD.h"
 
 
 APlayerCharacter2D::APlayerCharacter2D()
@@ -60,7 +58,7 @@ void APlayerCharacter2D::BeginPlay()
 
 	GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
 
-	InitUserInterface();
+	//InitBaseHud();
 }
 
 //---------------------------------
@@ -175,32 +173,49 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 		return;
 	}
 
-	const FVector DashDirection = GetActorForwardVector();
-	const float AirDashForce = DashForce / 2.f;
-	if(CMC->IsMovingOnGround())
+	if(GameInstance->PlayerData.SP > StaminaCostDash)
 	{
-		LaunchCharacter(DashDirection * DashForce, true, true);
-	}
-	else
-	{
-		// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
-		LaunchCharacter(DashDirection * AirDashForce, true, true);
-	}
-	
-	bCanDash = false;
-	bIsImmortal = true;
+		const FVector DashDirection = GetActorForwardVector();
+		const float AirDashForce = DashForce / 2.f;
+		if(CMC->IsMovingOnGround())
+		{
+			LaunchCharacter(DashDirection * DashForce, true, true);
+		}
+		else
+		{
+			// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
+			LaunchCharacter(DashDirection * AirDashForce, true, true);
+		}
 
-	// Set the Bar to Zero immediately after Dashing
-	PlayerHudWidget->DashProgressBar->SetPercent(0.f);
-	PlayerHudWidget->SetDashCoolDown(0.f);
+		GameInstance->RemoveStamina(StaminaCostDash);
+		//BaseHUD->UpdateStaminaInstant(GameInstance->PlayerData.SP);
+
+		// Start Delayed Stamina Tick
+		GetWorldTimerManager().SetTimer(
+			StaminaTickDelegate,
+			this,
+			&APlayerCharacter2D::OnStaminaTickTimeOut,
+			1.f,
+			false,
+			StaminaTickRate
+		);
+
+		// Set the Bar to Zero immediately after Dashing
+		GameInstance->ResetDashBar();
 	
-	GetWorldTimerManager().SetTimer(DashTimerDelegate,
-		this,
-		&APlayerCharacter2D::OnDashTimerTimeOut,
-		1.f,
-		false,
-		GameInstance->PlayerData.DashCoolDown
-	);
+		// Start update of the DashBar
+		GetWorldTimerManager().SetTimer(
+			DashTimerDelegate,
+			this,
+			&APlayerCharacter2D::OnDashTimerTimeOut,
+			DashCoolDownTickRate,
+			true,
+			DashCoolDownTickRate
+		);
+
+		bCanDash = false;
+		bIsImmortal = true;
+	}
 }
 
 //---------------------------------
@@ -247,22 +262,102 @@ void APlayerCharacter2D::BowDraw(const FInputActionValue& InputActionValue)
 }
 
 //---------------------------------
-/*
- * Used for ProgressBars to fit Values bigger than 1
- */
-float APlayerCharacter2D::NormalizeValue(const float& CurrentValue, const float& MaxValue)
+
+void APlayerCharacter2D::InitBaseHud()
 {
-	return FMath::Clamp(CurrentValue / MaxValue, 0.f, 1.f);
+	BaseHUD = Cast<ABaseHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+	if (!BaseHUD)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BaseHUD was not found."));
+		return;
+	}
+	
+	//BaseHUD->InitHud();
+}
+
+//---------------------------------
+/* A Timer that counts to a specific max value. Shows progress on the HUD between 0 and 1 */
+void APlayerCharacter2D::OnDashTimerTimeOut()
+{
+	const float& CoolDownTime = GameInstance->PlayerData.DashCoolDown;
+
+	UE_LOG(LogTemp, Log, TEXT("CurrentDashTimer: %f, CoolDownTime: %f"), CurrentDashTimer, CoolDownTime);
+	
+	CurrentDashTimer += DashCoolDownTickAmount;
+	if(CurrentDashTimer >= CoolDownTime)
+	{
+		CurrentDashTimer = 0.f;
+		GetWorldTimerManager().ClearTimer(DashTimerDelegate);
+
+		GameInstance->UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
+		//BaseHUD->UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
+
+		bCanDash = true;
+		bIsImmortal = false;
+	}
+	else
+	{
+		GameInstance->UpdateDashBar(CurrentDashTimer);
+		//BaseHUD->UpdateDashBar(CurrentDashTimer);
+	}
+	// Log for debugging the timer increment
+	UE_LOG(LogTemp, Log, TEXT("Timer Incremented: %f"), CurrentDashTimer);
 }
 
 //---------------------------------
 
-void APlayerCharacter2D::OnDashTimerTimeOut()
+void APlayerCharacter2D::OnStaminaRegenTimeOut()
 {
-	bCanDash = true;
-	bIsImmortal = false;
-	
-	PlayerHudWidget->SetDashCoolDown(GameInstance->PlayerData.DashCoolDown);
+	// ... add stamina regen when player picks up items
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnStaminaTickTimeOut()
+{
+	if(GameInstance)
+	{
+		// Calculate the damage to remove per tick as a percentage of the initial damage
+		const int DamagePerTick = DamageTaken * (StaminaRemovePerTick / 100);
+
+		// Slowly remove HP delayed until we reach current HP
+		if(LastStamina > GameInstance->PlayerData.SP)
+		{
+			float SP = LastStamina - DamagePerTick;
+			if(SP < GameInstance->PlayerData.SP)
+			{
+				SP = GameInstance->PlayerData.SP;
+			}
+
+			GameInstance->RemoveStaminaDelayed(SP);
+			
+			//BaseHUD->UpdateStaminaDelayed(SP);									// As ProgressBar
+			//BaseHUD->UpdateStaminaText(SP, GameInstance->PlayerData.MaxSP);		// As Text
+			
+			// Set HP for next Tick
+			LastStamina = SP;
+
+			// Stop Timer early if we already reached the Value
+			if(LastStamina <= GameInstance->PlayerData.SP)
+			{
+				GetWorldTimerManager().ClearTimer(StaminaTickDelegate);
+			}
+			
+			// Start Delayed Stamina Tick
+			GetWorldTimerManager().SetTimer(
+				StaminaTickDelegate,
+				this,
+				&APlayerCharacter2D::OnStaminaTickTimeOut,
+				1.f,
+				false,
+				StaminaTickRate
+			);
+		}
+		else
+		{
+			GetWorldTimerManager().ClearTimer(StaminaTickDelegate);
+		}
+	}
 }
 
 //---------------------------------
@@ -364,10 +459,6 @@ void APlayerCharacter2D::OnHealthTickTimeout()
 		// Calculate the damage to remove per tick as a percentage of the initial damage
 		const float DamagePerTick = DamageTaken * (HealthRemovePerTick / 100.f);
 
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
-			FString::Printf(TEXT("DMG: %f"), DamagePerTick));
-		
-
 		// Slowly remove HP delayed until we reach current HP
 		if(LastHealth > GameInstance->PlayerData.HP)
 		{
@@ -376,16 +467,12 @@ void APlayerCharacter2D::OnHealthTickTimeout()
 			{
 				HP = GameInstance->PlayerData.HP;
 			}
-
-			// Fit the current HP inside the Progress-Bar
-			const float Percent = NormalizeValue(HP, GameInstance->PlayerData.MaxHP);
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow,
-				FString::Printf(TEXT("HP: %f"), Percent));
 			
-			UpdateHPDelayed(Percent);
-			// As Text
-			PlayerHudWidget->SetHealth(HP);
-
+			GameInstance->RemoveHealthDelayed(HP);
+			
+			//BaseHUD->UpdateHPDelayed(HP);										// As ProgressBar
+			//BaseHUD->UpdateHPMinMax(HP,GameInstance->PlayerData.MaxHP);		// As Text
+			
 			// Set HP for next Tick
 			LastHealth = HP;
 
@@ -431,23 +518,6 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 
 //---------------------------------
 
-void APlayerCharacter2D::UpdateDashBar(float Val)
-{
-	if(GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate) > 0.f)
-	{
-		const float TimeRemaining = GetWorldTimerManager().GetTimerRemaining(DashTimerDelegate);
-		const float NormalizedValue = NormalizeValue(TimeRemaining, Val);
-
-		PlayerHudWidget->DashProgressBar->SetPercent(NormalizedValue);
-	}
-	else
-	{
-		PlayerHudWidget->DashProgressBar->SetPercent(Val);
-	}
-}
-
-//---------------------------------
-
 void APlayerCharacter2D::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -469,8 +539,6 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 		}
 
 		HandleAirMovement(CMC);
-
-		UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
 	}
 }
 
@@ -546,12 +614,12 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	LastHealth = GameInstance->PlayerData.HP;
 	DamageTaken = ActualDamage;
 	
-	const float HealthLeft = GameInstance->PlayerData.HP - ActualDamage;
-	if(HealthLeft > 0.f)
+	const int HealthLeft = GameInstance->PlayerData.HP - ActualDamage;
+	if(HealthLeft > 0)
 	{
+		// Update the Instant Damage HP Bar
 		GameInstance->RemoveHealth(ActualDamage);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("GI HP: %f"), GameInstance->PlayerData.HP));
-		
+	
 		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
 
 		bIsStunned = true;
@@ -571,13 +639,11 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 		GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
 
-		GameInstance->SetHP(0.f);
+		GameInstance->SetHealth(0.f);
 		LastHealth = 0.f;
 	}
 
-	// Update the Instant Damage HP Bar
-	const float Percent = NormalizeValue(GameInstance->PlayerData.HP, GameInstance->PlayerData.MaxHP);
-	UpdateHPInstant(Percent);
+	//BaseHUD->UpdateHPInstant(GameInstance->PlayerData.HP);
 
 	// Start Delayed Damage Tick
 	GetWorldTimerManager().SetTimer(
@@ -591,73 +657,3 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	
 	return ActualDamage;
 }
-
-//---------------------------------
-
-void APlayerCharacter2D::InitUserInterface()
-{
-	if(PlayerHudClass)
-	{
-		PlayerHudWidget = CreateWidget<UPlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0), PlayerHudClass);
-		if(PlayerHudWidget && GameInstance)
-		{
-			PlayerHudWidget->AddToPlayerScreen();
-			PlayerHudWidget->SetLevel(909);
-
-			// As Percentage
-			const float PercentHealth = NormalizeValue(GameInstance->PlayerData.HP, GameInstance->PlayerData.MaxHP);
-			UpdateHPInstant(PercentHealth);
-			UpdateHPDelayed(PercentHealth);
-
-			const float PercentStamina = NormalizeValue(GameInstance->PlayerData.DashCoolDown, GameInstance->PlayerData.DashCoolDown);
-			UpdateDashBar(PercentStamina);
-
-			// As Text
-			PlayerHudWidget->SetHealth(GameInstance->PlayerData.HP);
-			
-			UpdateStamina(GameInstance->PlayerData.Stamina);
-			UpdateDashCoolDown(GameInstance->PlayerData.DashCoolDown);
-			UpdateCredits(GameInstance->PlayerData.Credits);
-		}
-	}
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::UpdateHPInstant(float Val)
-{
-	PlayerHudWidget->HealthProgressBarInstant->SetPercent(Val);
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::UpdateHPDelayed(float Val)
-{
-	// As Progress Bar
-	PlayerHudWidget->HealthProgressBarDelayed->SetPercent(Val);
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::UpdateStamina(float Val)
-{
-	// TODO:: Implement Stamina which gets used by dashing.
-	PlayerHudWidget->SetStamina(Val);
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::UpdateCredits(int32 Val)
-{
-	PlayerHudWidget->SetDiamonds(Val);
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::UpdateDashCoolDown(float Val)
-{
-	PlayerHudWidget->SetDashCoolDown(Val);
-}
-
-
-

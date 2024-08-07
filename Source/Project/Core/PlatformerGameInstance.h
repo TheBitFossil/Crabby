@@ -12,9 +12,15 @@ struct FCollectableItemData;
 enum class ECollectableType : uint8;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, HP);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChanged, float, Stamina);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreditsChanged, int32, Credits);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, const int32&, HP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthDelayChanged, const int32&, HPDelayed);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChanged, const int32&, Stamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaDelayChanged, const int32&, StaminaDelayed);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashBarChanged, const float&, TimeLeft);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreditsChanged, const int32&, Credits);
 
 USTRUCT(BlueprintType)
 struct FPlayerData
@@ -22,22 +28,33 @@ struct FPlayerData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxHP{350.f};
+		int32 MaxHP{350};
+
+	/* Set this to MaxHP, Value is the last highest HP value.*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 HPDelayed{350};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float HP{200.f};
-	
+		int32 HP{200};
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 Credits{0};
+		int32 Credits{0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxStamina{200.f};
+		int32 MaxSP{180};
+
+	/* Set this to MaxSP, Value is the last highest SP value.*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 SPDelayed{180};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float Stamina{200.f};
-
+		int32 SP{80};
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float DashCoolDown{3.f};
+		float MaxDashCoolDown{3.f};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float DashCoolDown{3.f};
 };
 
 /**
@@ -51,9 +68,6 @@ class PROJECT_API UPlatformerGameInstance : public UGameInstance
 	virtual void Init() override;
 
 protected:
-	float MaxHealth{400.f};
-	float MaxStamina{200.f};
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<TObjectPtr<AItemSpawner>> ItemSpawners;
 	
@@ -61,22 +75,42 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FPlayerData PlayerData;
 
-	void SetHP(float Val);
-	
-	void AddCredits(int32 Val);
-	
-	void RemoveStamina(float Val);
+	FOnHealthChanged HealthChangedDelegate;
+	FOnHealthDelayChanged HealthDelayChangedDelegate;
 
-	void AddStamina(float Val);
+	FOnStaminaChanged StaminaChangedDelegate;
+	FOnStaminaDelayChanged StaminaDelayChangedDelegate;
+
+	FOnDashBarChanged DashBarChangedDelegate;
 	
-	void SetStamina(int I);
+	FOnCreditsChanged CreditsChangedDelegate;
 	
-	void RemoveHealth(float ActualDamage);
+	void SetHealth(const int32& Val);
 	
-	void AddHealth(float Health);
+	void RemoveHealth(const int32& ActualDamage);
+
+	void RemoveHealthDelayed(const int32& Val);
+
+	void AddHealth(const int32& Health);
+	
+	void SetStamina(const int32& Val);
+	
+	void RemoveStamina(const int32& Val);
+
+	void RemoveStaminaDelayed(const int32& Val);
+	
+	void AddStamina(const int32& Val);
+
+	void AddCredits(const int32& Val);
+
+	void UpdateDashBar(const float& CurrentDashTimer);
+	
+	void ResetDashBar();
 
 	UFUNCTION()
 	void OnItemCollected(const ALootItem* ItemCollected, const AActor* Collector);
 	
 	void RegisterItemSpawner(AItemSpawner* ItemSpawner);
+	
+
 };
