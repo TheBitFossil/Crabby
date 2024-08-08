@@ -7,9 +7,8 @@
 #include "Components/CapsuleComponent.h"
 
 
-
 ALootItem::ALootItem()
-	: BaseItemData(FCollectableItemData{0.f, 0.f, 0})
+	: ItemData(FCollectableItemData{0.f, 0.f, 0})
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -27,7 +26,8 @@ ALootItem::ALootItem()
 void ALootItem::ICollect_Implementation(const AActor* Collector)
 {
 	IICollectable::ICollect_Implementation(Collector);
-	
+
+	/* Callback inside ItemSpawner (owner) */
 	ItemCollectedDelegate.Broadcast(this, Collector);
 
 	Destroy();

@@ -16,8 +16,6 @@ public:
 	ACollectableCredits();
 
 protected:
-	FCollectableItemData ItemData;
-	
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;

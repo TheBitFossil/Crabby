@@ -86,7 +86,8 @@ void AItemSpawner::OnItemCollected(const ALootItem* ItemCollected, const AActor*
 	{
 		return;
 	}
-	
+
+	/* Callback inside GameInstance */
 	ItemSpawnerCollectedItemDelegate.Broadcast(ItemCollected, Collector);
 }
 

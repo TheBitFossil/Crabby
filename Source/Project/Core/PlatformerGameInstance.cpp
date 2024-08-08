@@ -8,16 +8,6 @@
 void UPlatformerGameInstance::Init()
 {
 	Super::Init();
-	/*PlayerData.HitPoints = PlayerData.MaxHitPoints;
-	PlayerData.LastHealth = PlayerData.HitPoints;
-	PlayerData.HitPointsDelayed = PlayerData.HitPoints;
-	
-	PlayerData.Stamina = PlayerData.MaxStamina;
-	PlayerData.LastStamina = PlayerData.Stamina;
-	PlayerData.StaminaDelayed = PlayerData.Stamina;
-
-	PlayerData.DamageTaken = 0.f;
-	*/
 }
 
 //---------------------------------
@@ -44,8 +34,12 @@ void UPlatformerGameInstance::RemoveHealthInstant(const float& ActualDamage)
 
 void UPlatformerGameInstance::SetHealthDelayed(const float& Val)
 {
-	PlayerData.HitPointsDelayed = FMath::Clamp(PlayerData.HitPointsDelayed, 0, PlayerData.MaxHitPoints);
-
+	PlayerData.HitPointsDelayed = FMath::Abs(Val);
+	if(PlayerData.HitPointsDelayed > PlayerData.MaxHitPoints)
+	{
+		PlayerData.HitPointsDelayed = PlayerData.MaxHitPoints;
+	}
+	/* Callback inside Base Hud */
 	HealthDelayChangedDelegate.Broadcast(PlayerData.HitPointsDelayed);
 }
 
@@ -82,10 +76,15 @@ void UPlatformerGameInstance::HealthDelayed(const float& Val)
 
 void UPlatformerGameInstance::AddHealth(const float& Val)
 {
+	// Update Instant Health Variable
 	const float NewHealth = PlayerData.HitPoints + Val;
 	PlayerData.HitPoints = FMath::Clamp(NewHealth, 0, PlayerData.MaxHitPoints);
-
+	
+	// Update Instant ProgressBar
 	HealthChangedDelegate.Broadcast(PlayerData.HitPoints);
+
+	// Update Delayed ProgressBar & Broadcast
+	SetHealthDelayed(PlayerData.HitPoints);
 }
 
 //---------------------------------
@@ -102,8 +101,12 @@ void UPlatformerGameInstance::RemoveStamina(const float& Val)
 
 void UPlatformerGameInstance::SetStaminaDelayed(const float& Val)
 {
-	PlayerData.StaminaDelayed = FMath::Clamp(PlayerData.StaminaDelayed, 0, PlayerData.MaxStamina);
-		
+	PlayerData.StaminaDelayed = FMath::Abs(Val);
+	if(PlayerData.StaminaDelayed > PlayerData.MaxStamina)
+	{
+		PlayerData.StaminaDelayed = PlayerData.MaxStamina;
+	}
+	/* Callback inside Base Hud */
 	StaminaDelayChangedDelegate.Broadcast(PlayerData.StaminaDelayed);
 }
 
@@ -120,10 +123,15 @@ void UPlatformerGameInstance::StaminaDelayed(const float& Val)
 
 void UPlatformerGameInstance::AddStamina(const float& Val)
 {
-	const float StaminaLeft = PlayerData.Stamina + Val;
-	PlayerData.Stamina = FMath::Clamp(StaminaLeft, 0, PlayerData.MaxStamina);
+	// Update instant Stamina 
+	const float NewStamina = PlayerData.Stamina + Val;
+	PlayerData.Stamina = FMath::Clamp(NewStamina, 0, PlayerData.MaxStamina);
 
+	// Update instant Stamina Progress Bar
 	StaminaChangedDelegate.Broadcast(PlayerData.Stamina);
+
+	// Update delayed Stamina Progress Bar & Broadcast
+	SetStaminaDelayed(PlayerData.Stamina);
 }
 
 //---------------------------------
@@ -166,9 +174,10 @@ void UPlatformerGameInstance::OnItemCollected(const ALootItem* ItemCollected, co
 	{
 	case ECollectableType::Potion:
 		AddHealth(ItemCollected->GetItemData().Health);
-			break;
+		break;
 	case ECollectableType::Buff:
-		RemoveStamina(ItemCollected->GetItemData().Stamina);
+		AddStamina(ItemCollected->GetItemData().Stamina);
+		UE_LOG(LogTemp, Warning, TEXT("ItemValue->%f, AttributeName->%d"), ItemCollected->GetItemData().Stamina, ItemCollected->GetItemType());
 		break;
 	case ECollectableType::Credits:
 		AddCredits(ItemCollected->GetItemData().Credits);

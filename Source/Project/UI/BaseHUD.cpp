@@ -69,12 +69,8 @@ void ABaseHUD::Tick(float DeltaSeconds)
 
 void ABaseHUD::OnHealthChanged(const float& HP)
 {
-	UpdateProgressBar(
-		PlayerHudWidget->HealthProgressBarInstant,
-		HP,
-		GameInstance->GetMaxHealth()
-	);
-	UE_LOG(LogTemp, Warning, TEXT("HP (%f)"), HP);
+	UpdateProgressBar(PlayerHudWidget->HealthProgressBarInstant, HP, GameInstance->GetMaxHealth());
+	UE_LOG(LogTemp, Warning, TEXT("OnHealthChanged(%f)"), HP);
 }
 
 //---------------------------------
@@ -83,7 +79,7 @@ void ABaseHUD::OnHealthDelayChanged(const float& HPDelayed)
 {
 	UpdateProgressBar(PlayerHudWidget->HealthProgressBarDelayed,HPDelayed, GameInstance->GetMaxHealth());
 
-	FString Msg = FString::Printf(TEXT("HP: %f / %f"), HPDelayed, GameInstance->GetMaxHealth());
+	FString Msg = FString::Printf(TEXT("HP:%0.0f/%0.0f"), HPDelayed, GameInstance->GetMaxHealth());
 	PlayerHudWidget->HealthTxt->SetText(FText::FromString(Msg));
 }
 
@@ -91,7 +87,7 @@ void ABaseHUD::OnHealthDelayChanged(const float& HPDelayed)
 
 void ABaseHUD::OnStaminaChanged(const float& Stamina)
 {
-	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarInstant,Stamina,GameInstance->GetMaxStamina());
+	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarInstant,Stamina, GameInstance->GetMaxStamina());
 }
 
 //---------------------------------
@@ -100,7 +96,7 @@ void ABaseHUD::OnStaminaDelayChanged(const float& StaminaDelayed)
 {
 	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarDelayed,StaminaDelayed, GameInstance->GetMaxStamina());
 
-	FString Msg = FString::Printf(TEXT("SP: %f / %f"), StaminaDelayed, GameInstance->GetStamina());
+	FString Msg = FString::Printf(TEXT("SP:%0.0f/%0.0f"), StaminaDelayed, GameInstance->GetMaxStamina());
 	PlayerHudWidget->StaminaTxt->SetText(FText::FromString(Msg));
 }
 
@@ -125,14 +121,14 @@ void ABaseHUD::InitHud()
 	PlayerHudWidget->SetLevelTxt(909);
 	
 	const FString Health =
-		FString::Printf(TEXT("HP: %f / %f"), GameInstance->GetHealth(), GameInstance->GetMaxHealth());
+		FString::Printf(TEXT("HP:%0.0f/%0.0f"), GameInstance->GetHealth(), GameInstance->GetMaxHealth());
 	PlayerHudWidget->HealthTxt->SetText(FText::FromString(Health));
 
 	UpdateHPInstant(GameInstance->GetHealth());
 	UpdateHPDelayed(GameInstance->GetHealthDelayed());
 
 	const FString Stamina =
-		FString::Printf(TEXT("SP: %f / %f"), GameInstance->GetStamina(), GameInstance->GetMaxStamina());
+		FString::Printf(TEXT("SP:%0.0f/%0.0f"), GameInstance->GetStamina(), GameInstance->GetMaxStamina());
 	PlayerHudWidget->StaminaTxt->SetText(FText::FromString(Stamina));
 
 	UpdateStaminaInstant(GameInstance->GetStamina());

@@ -117,11 +117,11 @@ public:
 	float GetMaxStamina() const {return PlayerData.MaxStamina;}
 	void SetStamina(const float& Val);
 	void RemoveStamina(const float& Val);
-
+	void AddStamina(const float& Val);
+	
 	float GetStaminaDelayed() const {return PlayerData.StaminaDelayed;}
 	void SetStaminaDelayed(const float& Val);
 	void StaminaDelayed(const float& Val);
-	void AddStamina(const float& Val);
 
 	/* Is a ref for delayed HealthBar, no delegates */
 	float& GetLastHealthRef() {return PlayerData.LastHealth;}

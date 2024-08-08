@@ -5,9 +5,11 @@
 
 
 ACollectablePotion::ACollectablePotion()
-	: ItemData(FCollectableItemData{25.f, 0.f, 0})
+	: ALootItem()
 {
-	
+	ItemData = FCollectableItemData{25.0f, 0.f, 0};
+
+	ItemType = ECollectableType::Potion;
 }
 
 //---------------------------------

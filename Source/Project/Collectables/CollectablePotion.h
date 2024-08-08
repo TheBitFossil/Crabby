@@ -18,9 +18,6 @@ public:
 	ACollectablePotion();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FCollectableItemData ItemData;
-	
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;

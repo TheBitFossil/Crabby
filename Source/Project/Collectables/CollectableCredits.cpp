@@ -3,9 +3,11 @@
 
 
 ACollectableCredits::ACollectableCredits()
-	: ItemData(FCollectableItemData{0.f, 0.f, 1})
+	: ALootItem()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	ItemData = FCollectableItemData{0.f, 0.f, 1};
+
+	ItemType = ECollectableType::Credits;
 }
 
 //---------------------------------

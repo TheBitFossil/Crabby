@@ -16,9 +16,6 @@ class PROJECT_API ACollectableStamina : public ALootItem
 	ACollectableStamina();
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FCollectableItemData ItemData;
-	
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;

@@ -4,9 +4,11 @@
 #include "CollectableStamina.h"
 
 ACollectableStamina::ACollectableStamina()
-	: ItemData(FCollectableItemData{0.f, 25.f, 0})
+	: ALootItem()
 {
+	ItemData = FCollectableItemData{0.f, 25.f, 0};
 	
+	ItemType = ECollectableType::Buff;
 }
 
 //---------------------------------
@@ -14,6 +16,8 @@ ACollectableStamina::ACollectableStamina()
 void ACollectableStamina::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	
 }
 
 //---------------------------------
