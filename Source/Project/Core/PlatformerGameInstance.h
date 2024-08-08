@@ -20,6 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaDelayChanged, const float&
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashBarChanged, const float&, TimeLeft);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreditsChanged, const float&, Credits);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLevelChanged, const float&, CurrentLevel);
 
 USTRUCT(BlueprintType)
 struct FPlayerData
@@ -102,6 +103,7 @@ public:
 
 	FOnDashBarChanged DashBarChangedDelegate;
 	FOnCreditsChanged CreditsChangedDelegate;
+	FOnLevelChanged LevelChangedDelegate;
 
 	float GetHealth() const {return PlayerData.HitPoints;}
 	float GetMaxHealth() const {return PlayerData.MaxHitPoints;}
@@ -155,4 +157,6 @@ public:
 	void OnItemCollected(const ALootItem* ItemCollected, const AActor* Collector);
 	
 	void RegisterItemSpawner(AItemSpawner* ItemSpawner);
+
+	void LevelChanged();
 };

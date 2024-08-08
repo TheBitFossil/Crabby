@@ -11,9 +11,13 @@ class UTextBlock;
 class UProgressBar;
 class UPlayerHUD;
 class UPlatformerGameInstance;
+
 /**
- * 
+ * Base HUD Class that is used for the GameMode
+ * Takes care of the PlayerHudWidget that is shown
+ * Reacts to Callbacks from the GameInstance -> Changes for Player Data
  */
+
 UCLASS()
 class PROJECT_API ABaseHUD : public AHUD
 {
@@ -25,12 +29,26 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|UI")
 	TSubclassOf<UPlayerHUD> PlayerHudClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|UI")
 	TObjectPtr<UPlayerHUD> PlayerHudWidget;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
 	TObjectPtr<UPlatformerGameInstance> GameInstance;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
+	FString HealthString = FString::Printf(TEXT("HP:%0.0f/%0.0f"));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
+	FString StaminaString = FString::Printf(TEXT("SP:%0.0f/%0.0f"));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
+	FString CreditsString = FString::Printf(TEXT("%d"));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
+	FString LevelString = FString::Printf(TEXT("Lvl %f-%f"));
+
+	UFUNCTION()
+	void OnLevelChanged(const float& CurrentLevel);
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;

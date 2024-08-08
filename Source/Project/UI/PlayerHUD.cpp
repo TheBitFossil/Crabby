@@ -5,12 +5,6 @@
 
 #include "Components/TextBlock.h"
 
-void UPlayerHUD::SetCreditsTxt(const int Amount) const
-{
-	const FString Msg = FString::Printf(TEXT("Diamonds: %d"), Amount);
-	CreditsTxt->SetText(FText::FromString(Msg));
-}
-
 //---------------------------------
 
 void UPlayerHUD::SetLevelTxt(const int Count) const

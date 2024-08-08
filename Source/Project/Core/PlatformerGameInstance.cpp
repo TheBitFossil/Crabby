@@ -198,3 +198,11 @@ void UPlatformerGameInstance::RegisterItemSpawner(AItemSpawner* ItemSpawner)
 	}
 }
 
+//---------------------------------
+
+void UPlatformerGameInstance::LevelChanged()
+{
+	LevelChangedDelegate.Broadcast();
+
+}
+

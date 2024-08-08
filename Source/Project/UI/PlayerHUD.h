@@ -44,7 +44,5 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	TObjectPtr<UProgressBar> DashProgressBar;
 
-	void SetCreditsTxt(const int Amount) const;
-	
 	void SetLevelTxt(const int Count) const;
 };
