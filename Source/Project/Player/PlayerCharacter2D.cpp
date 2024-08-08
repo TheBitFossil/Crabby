@@ -173,7 +173,10 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
-
+	
+	bCanDash = false;
+	bIsImmortal = true;
+	
 	// Directly update PlayerData struct inside GameInstance 
 	GameInstance->GetLastStaminaRef() = GameInstance->GetStamina();
 	
@@ -206,7 +209,8 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 
 		// Set the Bar to Zero immediately after Dashing
 		GameInstance->ResetDashBar();
-	
+		bIsImmortal = false;
+		
 		// Start update of the DashBar
 		GetWorldTimerManager().SetTimer(
 			DashTimerDelegate,
@@ -216,9 +220,6 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 			true,
 			DashCoolDownTickRate
 		);
-
-		bCanDash = false;
-		bIsImmortal = true;
 	}
 }
 
@@ -235,12 +236,10 @@ void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 	if(Enabled)
 	{
 		CMC->GravityScale = CustomGravityScale;
-		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("Normal"));
 	}
 	else
 	{
 		CMC->GravityScale = WallJumpGravityScale;
-		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Low Gravity"));
 	}
 }
 
@@ -282,14 +281,11 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 		GameInstance->UpdateDashBar(GameInstance->GetDashCoolDown());
 
 		bCanDash = true;
-		bIsImmortal = false;
 	}
 	else
 	{
 		GameInstance->UpdateDashBar(CurrentDashTimer);
 	}
-	// Log for debugging the timer increment
-	UE_LOG(LogTemp, Log, TEXT("Timer Incremented: %f"), CurrentDashTimer);
 }
 
 //---------------------------------
