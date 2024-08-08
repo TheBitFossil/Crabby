@@ -8,7 +8,6 @@
 #include "Project/Core/PlatformerGameInstance.h"
 #include "PlayerCharacter2D.generated.h"
 
-class ABaseHUD;
 class UItemDetectorComponent;
 class UPlatformerGameInstance;
 class UWallDetectorComponent;
@@ -79,19 +78,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TObjectPtr<UItemDetectorComponent> ItemDetectorComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=UI)
-		TObjectPtr<ABaseHUD> BaseHUD;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
-		int32 LastHealth{};
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
-		int32 LastStamina{};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
 		int32 DamageTaken {};
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Attack")
 		float AttackDmg{10.f};
 	
@@ -213,11 +203,15 @@ private:
 	UFUNCTION()
 	virtual void OnJumped_Implementation() override;
 
+	void UpdateAttributeTick(float& Last, const float& Current, const float& TotalAmount, const float& RemovalPerTick,
+	                         FTimerHandle& TimerHandle, const FString& AttributeName,
+	                         TFunction<void(float)> UpdateRefFunction, float TickRate);
+
 	void OnWallJumpTimerTimeOut();
 
 	void OnStunTimerTimeOut();
 
-	void OnHealthTickTimeout();
+	void OnHealthTickTimeOut();
 
 	void OnStaminaTickTimeOut();
 	
@@ -255,6 +249,4 @@ private:
 	void EquipSlot(const FInputActionValue& InputActionValue);
 	
 	void BowDraw(const FInputActionValue& InputActionValue);
-
-	void InitBaseHud();
 }; 

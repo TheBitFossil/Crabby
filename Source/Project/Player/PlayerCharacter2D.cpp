@@ -8,12 +8,10 @@
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Project/Ai/Enemy.h"
 #include "Project/Components/ItemDetectorComponent.h"
 #include "Project/Components/WallDetectorComponent.h"
 #include "Project/Core/PlatformerGameInstance.h"
-#include "Project/UI/BaseHUD.h"
 
 
 APlayerCharacter2D::APlayerCharacter2D()
@@ -56,9 +54,12 @@ void APlayerCharacter2D::BeginPlay()
 	
 	GetCharacterMovement()->GravityScale = CustomGravityScale;
 
+	// Init PlayerData
 	GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
-
-	//InitBaseHud();
+	if(!GameInstance)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No viable GameInstance found inside PlayerCharacter2D."));
+	}
 }
 
 //---------------------------------
@@ -173,7 +174,10 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 		return;
 	}
 
-	if(GameInstance->PlayerData.SP > StaminaCostDash)
+	// Directly update PlayerData struct inside GameInstance 
+	GameInstance->GetLastStaminaRef() = GameInstance->GetStamina();
+	
+	if(GameInstance->GetStamina() > StaminaCostDash)
 	{
 		const FVector DashDirection = GetActorForwardVector();
 		const float AirDashForce = DashForce / 2.f;
@@ -186,9 +190,9 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 			// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
 			LaunchCharacter(DashDirection * AirDashForce, true, true);
 		}
-
+				
+		// Update Instant Stamina Bar
 		GameInstance->RemoveStamina(StaminaCostDash);
-		//BaseHUD->UpdateStaminaInstant(GameInstance->PlayerData.SP);
 
 		// Start Delayed Stamina Tick
 		GetWorldTimerManager().SetTimer(
@@ -262,24 +266,10 @@ void APlayerCharacter2D::BowDraw(const FInputActionValue& InputActionValue)
 }
 
 //---------------------------------
-
-void APlayerCharacter2D::InitBaseHud()
-{
-	BaseHUD = Cast<ABaseHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
-	if (!BaseHUD)
-	{
-		UE_LOG(LogTemp, Error, TEXT("BaseHUD was not found."));
-		return;
-	}
-	
-	//BaseHUD->InitHud();
-}
-
-//---------------------------------
 /* A Timer that counts to a specific max value. Shows progress on the HUD between 0 and 1 */
 void APlayerCharacter2D::OnDashTimerTimeOut()
 {
-	const float& CoolDownTime = GameInstance->PlayerData.DashCoolDown;
+	const float& CoolDownTime = GameInstance->GetDashCoolDown();
 
 	UE_LOG(LogTemp, Log, TEXT("CurrentDashTimer: %f, CoolDownTime: %f"), CurrentDashTimer, CoolDownTime);
 	
@@ -289,8 +279,7 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 		CurrentDashTimer = 0.f;
 		GetWorldTimerManager().ClearTimer(DashTimerDelegate);
 
-		GameInstance->UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
-		//BaseHUD->UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
+		GameInstance->UpdateDashBar(GameInstance->GetDashCoolDown());
 
 		bCanDash = true;
 		bIsImmortal = false;
@@ -298,7 +287,6 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 	else
 	{
 		GameInstance->UpdateDashBar(CurrentDashTimer);
-		//BaseHUD->UpdateDashBar(CurrentDashTimer);
 	}
 	// Log for debugging the timer increment
 	UE_LOG(LogTemp, Log, TEXT("Timer Incremented: %f"), CurrentDashTimer);
@@ -315,48 +303,18 @@ void APlayerCharacter2D::OnStaminaRegenTimeOut()
 
 void APlayerCharacter2D::OnStaminaTickTimeOut()
 {
-	if(GameInstance)
+	if (GameInstance)
 	{
-		// Calculate the damage to remove per tick as a percentage of the initial damage
-		const int DamagePerTick = DamageTaken * (StaminaRemovePerTick / 100);
-
-		// Slowly remove HP delayed until we reach current HP
-		if(LastStamina > GameInstance->PlayerData.SP)
-		{
-			float SP = LastStamina - DamagePerTick;
-			if(SP < GameInstance->PlayerData.SP)
-			{
-				SP = GameInstance->PlayerData.SP;
-			}
-
-			GameInstance->RemoveStaminaDelayed(SP);
-			
-			//BaseHUD->UpdateStaminaDelayed(SP);									// As ProgressBar
-			//BaseHUD->UpdateStaminaText(SP, GameInstance->PlayerData.MaxSP);		// As Text
-			
-			// Set HP for next Tick
-			LastStamina = SP;
-
-			// Stop Timer early if we already reached the Value
-			if(LastStamina <= GameInstance->PlayerData.SP)
-			{
-				GetWorldTimerManager().ClearTimer(StaminaTickDelegate);
-			}
-			
-			// Start Delayed Stamina Tick
-			GetWorldTimerManager().SetTimer(
-				StaminaTickDelegate,
-				this,
-				&APlayerCharacter2D::OnStaminaTickTimeOut,
-				1.f,
-				false,
-				StaminaTickRate
-			);
-		}
-		else
-		{
-			GetWorldTimerManager().ClearTimer(StaminaTickDelegate);
-		}
+		UpdateAttributeTick(
+		GameInstance->GetLastStaminaRef(),
+		GameInstance->GetStamina(),
+		StaminaCostDash,
+		StaminaRemovePerTick,
+		StaminaTickDelegate,
+		"Stamina",
+		[this](float NewValue){GameInstance->StaminaDelayed(NewValue);},
+		StaminaTickRate
+		);
 	}
 }
 
@@ -452,43 +410,82 @@ void APlayerCharacter2D::OnStunTimerTimeOut()
 
 //---------------------------------
 
-void APlayerCharacter2D::OnHealthTickTimeout()
+/**
+ * Used for updating the delayed Progress Bars
+ * @param Last : Pass by Ref, this Value changes each Tick.
+ * @param Current: Lowest possible Value for Last.
+ * @param TotalAmount: Reducing this much from Last to Current
+ * @param RemovalPerTick: How much to remove each tick in fixed %
+ * @param AttributeName: Identification and debugging
+ * @param UpdateRefFunction: Lambda Function that will update the first Parameter ref inside GameInstance
+ */
+void APlayerCharacter2D::UpdateAttributeTick(float& Last, const float& Current, const float& TotalAmount, const float& RemovalPerTick,
+	FTimerHandle& TimerHandle, const FString& AttributeName, TFunction<void(float)>UpdateRefFunction, float TickRate)
 {
-	if(GameInstance)
+	// Calculate Removal per Tick
+	const float Percentage = (RemovalPerTick / 100.f);
+	const float AmountToRemove = TotalAmount * Percentage;
+
+	// Debug Logging
+	UE_LOG(LogTemp, Log, TEXT("%s Tick -> Percentage(%f), AmountToRemove(%f), LastValue(%f)"), *AttributeName, Percentage, AmountToRemove, Last);
+
+	// Slowly remove the attribute until we reach the current value
+	if(Last > Current)
 	{
-		// Calculate the damage to remove per tick as a percentage of the initial damage
-		const float DamagePerTick = DamageTaken * (HealthRemovePerTick / 100.f);
-
-		// Slowly remove HP delayed until we reach current HP
-		if(LastHealth > GameInstance->PlayerData.HP)
+		float NewValue = Last - AmountToRemove;
+		if(NewValue < Current)
 		{
-			float HP = LastHealth - DamagePerTick;
-			if(HP < GameInstance->PlayerData.HP)
-			{
-				HP = GameInstance->PlayerData.HP;
-			}
-			
-			GameInstance->RemoveHealthDelayed(HP);
-			
-			//BaseHUD->UpdateHPDelayed(HP);										// As ProgressBar
-			//BaseHUD->UpdateHPMinMax(HP,GameInstance->PlayerData.MaxHP);		// As Text
-			
-			// Set HP for next Tick
-			LastHealth = HP;
+			NewValue = Current;
+		}
 
-			// Stop Timer early if we already reached the Value
-			if(LastHealth <= GameInstance->PlayerData.HP)
-			{
-				GetWorldTimerManager().ClearTimer(HealthTickDelegate);
-			}
-			
-			GetWorldTimerManager().SetTimer(HealthTickDelegate, this, &APlayerCharacter2D::OnHealthTickTimeout,
-													1.f, false, HealthTickRate);
+		// Debug logging
+		UE_LOG(LogTemp, Log, TEXT("%s Value Ref Update to(%f)"), *AttributeName, NewValue);
+		UpdateRefFunction(NewValue);
+
+		// Set for next Tick
+		Last = NewValue;
+
+		// Stop Timer if we've reached the target value
+		if(Last < Current)
+		{
+			GetWorldTimerManager().ClearTimer(TimerHandle);
 		}
 		else
 		{
-			GetWorldTimerManager().ClearTimer(HealthTickDelegate);
+			GetWorldTimerManager().SetTimer(
+				TimerHandle,
+				FTimerDelegate::CreateLambda
+				(
+					[this, &Last, Current, TotalAmount, RemovalPerTick, &TimerHandle, AttributeName, UpdateRefFunction, TickRate]()
+					{UpdateAttributeTick(Last, Current, TotalAmount, RemovalPerTick, TimerHandle, AttributeName, UpdateRefFunction, TickRate);}
+				),
+				TickRate,
+				false);
 		}
+	}
+	else
+	{
+		// Stop Timer if we've reached the target value
+		GetWorldTimerManager().ClearTimer(TimerHandle);
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnHealthTickTimeOut()
+{
+	if(GameInstance)
+	{
+		UpdateAttributeTick(
+			GameInstance->GetLastHealthRef(),
+			GameInstance->GetHealth(),
+			GameInstance->GetDamageTaken(),
+			HealthRemovePerTick,
+			HealthTickDelegate,
+			"Health",
+			[this](float NewValue){GameInstance->HealthDelayed(NewValue);},
+			HealthTickRate
+		);
 	}
 }
 
@@ -524,11 +521,6 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 
 	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
 	{
-		/*
-		GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::Red,
-			CMC->GetLastUpdateVelocity().ToString());
-		*/
-	
 		if (CMC->IsMovingOnGround())
 		{
 			MovementState = EMoveState::MOVE_Ground;
@@ -609,17 +601,17 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	}
 	
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	// Cache this for the delayed HealthBar. Get the Value from GameInstance
-	LastHealth = GameInstance->PlayerData.HP;
-	DamageTaken = ActualDamage;
 	
-	const int HealthLeft = GameInstance->PlayerData.HP - ActualDamage;
-	if(HealthLeft > 0)
+	// Directly update PlayerData struct inside GameInstance
+	GameInstance->GetLastHealthRef() = GameInstance->GetHealth();
+	GameInstance->SetDamageTaken(ActualDamage);
+	
+	const float HealthLeft = GameInstance->GetHealth() - ActualDamage;
+	if(HealthLeft > 0.f)
 	{
-		// Update the Instant Damage HP Bar
-		GameInstance->RemoveHealth(ActualDamage);
-	
+		// Update: Instant HP Bar
+		GameInstance->RemoveHealthInstant(ActualDamage);
+		
 		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
 
 		bIsStunned = true;
@@ -631,6 +623,17 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 			StunDuration,
 			false
 		);
+
+		// Start Delayed Damage Tick
+		GetWorldTimerManager().SetTimer(
+			HealthTickDelegate,
+			this,
+			&APlayerCharacter2D::OnHealthTickTimeOut,
+			1.f,
+			false,
+			HealthTickRate
+		);
+		UE_LOG(LogTemp, Warning, TEXT("Starting Delayed Damage TickRate(%f)"), HealthTickRate);
 	}
 	else
 	{
@@ -640,20 +643,8 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
 
 		GameInstance->SetHealth(0.f);
-		LastHealth = 0.f;
+		GameInstance->GetLastHealthRef() = 0.f;
 	}
-
-	//BaseHUD->UpdateHPInstant(GameInstance->PlayerData.HP);
-
-	// Start Delayed Damage Tick
-	GetWorldTimerManager().SetTimer(
-		HealthTickDelegate,
-		this,
-		&APlayerCharacter2D::OnHealthTickTimeout,
-		1.f,
-		false,
-		HealthTickRate
-	);
-	
+		
 	return ActualDamage;
 }

@@ -12,15 +12,14 @@ struct FCollectableItemData;
 enum class ECollectableType : uint8;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, const int32&, HP);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthDelayChanged, const int32&, HPDelayed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, const float&, HP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthDelayChanged, const float&, HPDelayed);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChanged, const int32&, Stamina);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaDelayChanged, const int32&, StaminaDelayed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChanged, const float&, Stamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaDelayChanged, const float&, StaminaDelayed);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDashBarChanged, const float&, TimeLeft);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreditsChanged, const int32&, Credits);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreditsChanged, const float&, Credits);
 
 USTRUCT(BlueprintType)
 struct FPlayerData
@@ -28,33 +27,53 @@ struct FPlayerData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		int32 MaxHP{350};
-
-	/* Set this to MaxHP, Value is the last highest HP value.*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 HPDelayed{350};
+		float MaxHitPoints{350.f};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		int32 HP{200};
+		float HitPointsDelayed{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		int32 Credits{0};
+		float HitPoints{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float Credits{0.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		int32 MaxSP{180};
+		float MaxStamina{180.f};
 
-	/* Set this to MaxSP, Value is the last highest SP value.*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 SPDelayed{180};
+		float StaminaDelayed{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float Stamina{};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		int32 SP{80};
+		float DamageTaken{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float LastHealth{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float LastStamina{};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float MaxDashCoolDown{3.f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float DashCoolDown{3.f};
+
+	FPlayerData()
+	{
+		HitPoints = MaxHitPoints;
+		LastHealth = HitPoints;
+		HitPointsDelayed = HitPoints;
+	
+		Stamina = MaxStamina;
+		LastStamina = Stamina;
+		StaminaDelayed = Stamina;
+
+		DamageTaken = 0.f;
+	}
 };
 
 /**
@@ -70,11 +89,11 @@ class PROJECT_API UPlatformerGameInstance : public UGameInstance
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<TObjectPtr<AItemSpawner>> ItemSpawners;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FPlayerData PlayerData;
 	
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FPlayerData PlayerData;
-
 	FOnHealthChanged HealthChangedDelegate;
 	FOnHealthDelayChanged HealthDelayChangedDelegate;
 
@@ -82,35 +101,58 @@ public:
 	FOnStaminaDelayChanged StaminaDelayChangedDelegate;
 
 	FOnDashBarChanged DashBarChangedDelegate;
-	
 	FOnCreditsChanged CreditsChangedDelegate;
-	
-	void SetHealth(const int32& Val);
-	
-	void RemoveHealth(const int32& ActualDamage);
 
-	void RemoveHealthDelayed(const int32& Val);
-
-	void AddHealth(const int32& Health);
+	float GetHealth() const {return PlayerData.HitPoints;}
+	float GetMaxHealth() const {return PlayerData.MaxHitPoints;}
+	void SetHealth(const float& Val);
+	void RemoveHealthInstant(const float& ActualDamage);
+	void AddHealth(const float& Val);
 	
-	void SetStamina(const int32& Val);
+	float GetHealthDelayed() const {return PlayerData.HitPointsDelayed;}
+	void SetHealthDelayed(const float& Val);
+	void HealthDelayed(const float& Val);
+
+	float GetStamina() const {return PlayerData.Stamina;}
+	float GetMaxStamina() const {return PlayerData.MaxStamina;}
+	void SetStamina(const float& Val);
+	void RemoveStamina(const float& Val);
+
+	float GetStaminaDelayed() const {return PlayerData.StaminaDelayed;}
+	void SetStaminaDelayed(const float& Val);
+	void StaminaDelayed(const float& Val);
+	void AddStamina(const float& Val);
+
+	/* Is a ref for delayed HealthBar, no delegates */
+	float& GetLastHealthRef() {return PlayerData.LastHealth;}
 	
-	void RemoveStamina(const int32& Val);
+	/* Is a ref for delayed StaminaBar, no delegates */
+	float& GetLastStaminaRef() {return PlayerData.LastStamina;}
 
-	void RemoveStaminaDelayed(const int32& Val);
+	/* Is a cached value for the delayed HealthBar, no delegates */
+	float GetDamageTaken() const {return PlayerData.DamageTaken;}
+	void SetDamageTaken(const float& Val)
+	{
+		PlayerData.DamageTaken = Val;
+	}
 	
-	void AddStamina(const int32& Val);
+	float GetCredits() const {return PlayerData.Credits;}
+	void AddCredits(const float& Val);
 
-	void AddCredits(const int32& Val);
-
+	/* Is a cached value for the delayed HealthBar, no delegates */
+	float GetDashCoolDown() const {return PlayerData.DashCoolDown;}
+	float GetMaxDashCoolDown() const {return PlayerData.MaxDashCoolDown;}
+	void SetDashCoolDown(const float& Val)
+	{
+		PlayerData.DashCoolDown = Val;
+	}
 	void UpdateDashBar(const float& CurrentDashTimer);
-	
 	void ResetDashBar();
 
+	void KeepWithinBounds(const float& ReduceDelayedValue, const float& LowestValue, float& LastValue);
+	
 	UFUNCTION()
 	void OnItemCollected(const ALootItem* ItemCollected, const AActor* Collector);
 	
 	void RegisterItemSpawner(AItemSpawner* ItemSpawner);
-	
-
 };

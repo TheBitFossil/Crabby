@@ -31,7 +31,6 @@ void ABaseHUD::BeginPlay()
 		GameInstance->StaminaDelayChangedDelegate.AddDynamic(this, &ABaseHUD::OnStaminaDelayChanged);
 
 		GameInstance->DashBarChangedDelegate.AddDynamic(this, &ABaseHUD::OnDashBarChanged);
-		
 		GameInstance->CreditsChangedDelegate.AddDynamic(this, &ABaseHUD::OnCreditsChanged);
 
 		UE_LOG(LogTemp, Warning, TEXT("BaseHUD: Callbacks ready from Game Instance."))
@@ -49,7 +48,6 @@ void ABaseHUD::BeginPlay()
 			if(PlayerHudWidget && GameInstance)
 			{
 				PlayerHudWidget->AddToPlayerScreen();
-
 				InitHud();
 			}
 		}
@@ -69,72 +67,55 @@ void ABaseHUD::Tick(float DeltaSeconds)
 
 //---------------------------------
 
-void ABaseHUD::OnHealthChanged(const int32& HP)
+void ABaseHUD::OnHealthChanged(const float& HP)
 {
 	UpdateProgressBar(
 		PlayerHudWidget->HealthProgressBarInstant,
 		HP,
-		GameInstance->PlayerData.MaxHP
+		GameInstance->GetMaxHealth()
 	);
-
-	UpdateHealthText(HP, GameInstance->PlayerData.MaxHP);
+	UE_LOG(LogTemp, Warning, TEXT("HP (%f)"), HP);
 }
 
 //---------------------------------
 
-void ABaseHUD::OnHealthDelayChanged(const int32& HPDelayed)
+void ABaseHUD::OnHealthDelayChanged(const float& HPDelayed)
 {
-	UpdateProgressBar(
-		PlayerHudWidget->HealthProgressBarDelayed,
-		HPDelayed,
-		GameInstance->PlayerData.MaxHP
-	);
+	UpdateProgressBar(PlayerHudWidget->HealthProgressBarDelayed,HPDelayed, GameInstance->GetMaxHealth());
 
-	UpdateHealthText(HPDelayed, GameInstance->PlayerData.MaxHP);
+	FString Msg = FString::Printf(TEXT("HP: %f / %f"), HPDelayed, GameInstance->GetMaxHealth());
+	PlayerHudWidget->HealthTxt->SetText(FText::FromString(Msg));
 }
 
 //---------------------------------
 
-void ABaseHUD::OnStaminaChanged(const int32& Stamina)
+void ABaseHUD::OnStaminaChanged(const float& Stamina)
 {
-	UpdateProgressBar(
-		PlayerHudWidget->StaminaProgressBarInstant,
-		Stamina,
-		GameInstance->PlayerData.MaxSP
-	);
-
-	UpdateStaminaText(Stamina, GameInstance->PlayerData.MaxSP);
+	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarInstant,Stamina,GameInstance->GetMaxStamina());
 }
 
 //---------------------------------
 
-void ABaseHUD::OnStaminaDelayChanged(const int32& StaminaDelayed)
+void ABaseHUD::OnStaminaDelayChanged(const float& StaminaDelayed)
 {
-	UpdateProgressBar(
-		PlayerHudWidget->StaminaProgressBarDelayed,
-		StaminaDelayed,
-		GameInstance->PlayerData.MaxSP
-	);
+	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarDelayed,StaminaDelayed, GameInstance->GetMaxStamina());
 
-	UpdateStaminaText(StaminaDelayed, GameInstance->PlayerData.MaxSP);
+	FString Msg = FString::Printf(TEXT("SP: %f / %f"), StaminaDelayed, GameInstance->GetStamina());
+	PlayerHudWidget->StaminaTxt->SetText(FText::FromString(Msg));
 }
 
 //---------------------------------
 
 void ABaseHUD::OnDashBarChanged(const float& TimeLeft)
 {
-	UpdateProgressBar(
-		PlayerHudWidget->DashProgressBar,
-		TimeLeft,
-		GameInstance->PlayerData.MaxDashCoolDown
-	);
+	UpdateProgressBar(PlayerHudWidget->DashProgressBar,TimeLeft,	GameInstance->GetMaxDashCoolDown());
 }
 
 //---------------------------------
 
-void ABaseHUD::OnCreditsChanged(const int32& Credits)
+void ABaseHUD::OnCreditsChanged(const float& Credits)
 {
-	
+	UpdateCredits(Credits);
 }
 
 //---------------------------------
@@ -142,20 +123,23 @@ void ABaseHUD::OnCreditsChanged(const int32& Credits)
 void ABaseHUD::InitHud()
 {
 	PlayerHudWidget->SetLevelTxt(909);
-
-	// Log the initial values
-	UE_LOG(LogTemp, Log, TEXT("Initializing HUD with HP: %f / %f"), GameInstance->PlayerData.HP, GameInstance->PlayerData.MaxHP);
 	
-	UpdateHealthText(GameInstance->PlayerData.HP, GameInstance->PlayerData.MaxHP);
-	UpdateHPInstant(GameInstance->PlayerData.HP);
-	UpdateHPDelayed(GameInstance->PlayerData.HP);
-	
-	UpdateStaminaText(GameInstance->PlayerData.SP, GameInstance->PlayerData.MaxSP);
-	UpdateStaminaInstant(GameInstance->PlayerData.SP);
-	UpdateStaminaDelayed(GameInstance->PlayerData.SP);
+	const FString Health =
+		FString::Printf(TEXT("HP: %f / %f"), GameInstance->GetHealth(), GameInstance->GetMaxHealth());
+	PlayerHudWidget->HealthTxt->SetText(FText::FromString(Health));
 
-	UpdateCredits(GameInstance->PlayerData.Credits);
-	UpdateDashBar(GameInstance->PlayerData.DashCoolDown);
+	UpdateHPInstant(GameInstance->GetHealth());
+	UpdateHPDelayed(GameInstance->GetHealthDelayed());
+
+	const FString Stamina =
+		FString::Printf(TEXT("SP: %f / %f"), GameInstance->GetStamina(), GameInstance->GetMaxStamina());
+	PlayerHudWidget->StaminaTxt->SetText(FText::FromString(Stamina));
+
+	UpdateStaminaInstant(GameInstance->GetStamina());
+	UpdateStaminaDelayed(GameInstance->GetStaminaDelayed());
+
+	UpdateCredits(GameInstance->GetCredits());
+	UpdateDashBar(GameInstance->GetDashCoolDown());
 }
 
 //---------------------------------
@@ -164,8 +148,9 @@ void ABaseHUD::InitHud()
  */
 float ABaseHUD::NormalizeValue(const float& CurrentValue, const float& MaxValue)
 {
-	float NormalizedValue = FMath::Clamp(CurrentValue / MaxValue, 0.f, 1.f);
-	UE_LOG(LogTemp, Log, TEXT("Normalized Value: %f (Current: %f, Max: %f)"), NormalizedValue, CurrentValue, MaxValue);
+	const float NormalizedValue = FMath::Clamp(CurrentValue / MaxValue, 0.f, 1.f);
+	
+	//UE_LOG(LogTemp, Log, TEXT("Normalized Value: %f (Current: %f, Max: %f)"), NormalizedValue, CurrentValue, MaxValue);
 	return NormalizedValue;
 }
 
@@ -173,79 +158,39 @@ float ABaseHUD::NormalizeValue(const float& CurrentValue, const float& MaxValue)
 
 void ABaseHUD::UpdateProgressBar(UProgressBar* ProgressBar, const float& Value, const float& MaxValue)
 {
-	const float Percent = NormalizeValue(Value, MaxValue);
 	if(ProgressBar)
 	{
+		const float Percent = NormalizeValue(Value, MaxValue);
 		ProgressBar->SetPercent(Percent);
 	}
 }
 
 //---------------------------------
 
-void ABaseHUD::UpdateMinMaxText(UTextBlock* TextBlock, const FString& FormatString, const float& Min, const float& Max)
-{
-	if(TextBlock)
-	{
-		const FString Msg = FString::Printf(*FormatString, Min, Max);
-		TextBlock->SetText(FText::FromString(Msg));
-	}
-}
-
-//---------------------------------
-
-void ABaseHUD::UpdateHealthText(const float& Min, const float& Max)
-{
-	UpdateMinMaxText(
-		PlayerHudWidget->HealthTxt,
-		TEXT("HP: %d / %d"),
-		Min,
-		Max
-	);
-}
-
-//---------------------------------
-
 void ABaseHUD::UpdateHPInstant(const float& Val)
 {
-	UpdateProgressBar(PlayerHudWidget->HealthProgressBarInstant, Val, GameInstance->PlayerData.MaxHP);
+	UpdateProgressBar(PlayerHudWidget->HealthProgressBarInstant, Val, GameInstance->GetMaxHealth());
 }
 
 //---------------------------------
 
 void ABaseHUD::UpdateHPDelayed(const float& Val)
 {
-	UpdateProgressBar(PlayerHudWidget->HealthProgressBarDelayed, Val, GameInstance->PlayerData.MaxHP);
-
-	UpdateHealthText(Val, GameInstance->PlayerData.MaxHP);
-}
-
-//---------------------------------
-
-void ABaseHUD::UpdateStaminaText(const float& Min, const float& Max)
-{
-	UpdateMinMaxText(
-		PlayerHudWidget->StaminaTxt,
-		TEXT("SP: %d / %d"),
-		Min,
-		Max
-	);
+	UpdateProgressBar(PlayerHudWidget->HealthProgressBarDelayed, Val, GameInstance->GetHealth());
 }
 
 //---------------------------------
 
 void ABaseHUD::UpdateStaminaInstant(const float& Val)
 {
-	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarInstant,
-						GameInstance->PlayerData.SP,GameInstance->PlayerData.MaxSP);
+	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarInstant,GameInstance->GetStamina(),GameInstance->GetMaxStamina());
 }
 
 //---------------------------------
 
 void ABaseHUD::UpdateStaminaDelayed(const float& Val)
 {
-	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarDelayed,Val, GameInstance->PlayerData.MaxSP);
-	
-	UpdateStaminaText(Val, GameInstance->PlayerData.MaxSP);
+	UpdateProgressBar(PlayerHudWidget->StaminaProgressBarDelayed,Val, GameInstance->GetMaxStamina());
 }
 
 //---------------------------------
@@ -259,13 +204,13 @@ void ABaseHUD::UpdateCredits(const int& Val)
 
 void ABaseHUD::UpdateDashBar(const float& Val)
 {
-	UpdateProgressBar(PlayerHudWidget->DashProgressBar,Val, GameInstance->PlayerData.MaxDashCoolDown);
+	UpdateProgressBar(PlayerHudWidget->DashProgressBar,Val, GameInstance->GetMaxDashCoolDown());
 }
 
 //---------------------------------
 
 void ABaseHUD::ResetDashBar()
 {
-	UpdateProgressBar(PlayerHudWidget->DashProgressBar,0.f, GameInstance->PlayerData.MaxDashCoolDown);
+	UpdateProgressBar(PlayerHudWidget->DashProgressBar,0.f, GameInstance->GetMaxDashCoolDown());
 }
 
