@@ -62,6 +62,9 @@ struct FPlayerData
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float DashCoolDown{3.f};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float CurrentLevel{1.f};
 
 	FPlayerData()
 	{
@@ -148,6 +151,9 @@ public:
 	{
 		PlayerData.DashCoolDown = Val;
 	}
+
+	float GetCurrentLevel() const{return PlayerData.CurrentLevel;}
+	
 	void UpdateDashBar(const float& CurrentDashTimer);
 	void ResetDashBar();
 
