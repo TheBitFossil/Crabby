@@ -23,7 +23,7 @@ void UAnimNotifyPlayerAttack::OnNotifyBegin_Implementation(UPaperZDAnimInstance*
 	{
 		return;
 	}
-	
+		
 	if (APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
 		OwningActor->ToggleAttackCollisionBox(true);

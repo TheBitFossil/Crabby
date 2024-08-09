@@ -15,7 +15,6 @@ USTRUCT(BlueprintType)
 struct FInputConfig
 {
 	GENERATED_BODY()
-	FInputConfig();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputAction> IA_Move;

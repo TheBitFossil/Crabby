@@ -6,8 +6,12 @@
 #include "PaperZDCharacter.h"
 #include "AnimSequences/PaperZDAnimSequence.h"
 #include "Project/Core/PlatformerGameInstance.h"
+#include "Project/DataAssets/AnimationDataAsset.h"
 #include "PlayerCharacter2D.generated.h"
 
+class UAnimationComboComponent;
+class UAnimationDataAsset;
+class UInputActionsComponent;
 class UItemDetectorComponent;
 class UPlatformerGameInstance;
 class UWallDetectorComponent;
@@ -29,6 +33,24 @@ enum class EMoveState : uint8
 	MOVE_Wall
 };
 
+UENUM()
+enum class EAnimationState : int32
+{
+	Walking,
+	Dashing,
+	Running,
+	Punch,
+	Kick,
+	Block,
+	Grab,
+	Sword,
+	Bow,
+	Aim,
+	Crouching,
+	GettingHit,
+	Rolling,
+};
+
 UCLASS()
 class PROJECT_API APlayerCharacter2D : public APaperZDCharacter
 {
@@ -46,24 +68,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 		TObjectPtr<UInputMappingContext> IMC_Default;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputAction> IA_Move;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputAction> IA_Jump;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputAction> IA_Attack;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputAction> IA_Dash;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputAction> IA_Equip_Slot_01;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputAction> IA_Bow_Draw;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
@@ -76,8 +80,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TObjectPtr<UWallDetectorComponent> WallDetectorFront;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 		TObjectPtr<UItemDetectorComponent> ItemDetectorComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+		TObjectPtr<UInputActionsComponent> InputActionsComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
+		TObjectPtr<UAnimationDataAsset> AttackAnimationDataAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
+		TObjectPtr<UAnimationComboComponent> AnimationComboComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+		TObjectPtr<UCharacterMovementComponent> CMC;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
 		int32 DamageTaken {};
@@ -150,6 +166,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		EMoveState MovementState;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
+		EAnimationState AnimationState;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
 		TObjectPtr<UPlatformerGameInstance> GameInstance;
 
@@ -229,24 +248,25 @@ private:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void SetDirectionFacing(const float ActionValue);
-	
+
+public:
 	void Move(const FInputActionValue& InputActionValue);
-
 	void MoveCompleted(const FInputActionValue& InputActionValue);
-
-	void HandleAirMovement(UCharacterMovementComponent* CMC);
-	
-	void StartJump(const FInputActionValue& InputActionValue);
-	
-	void StopJump(const FInputActionValue& InputActionValue);
-	
-	void Attack(const FInputActionValue& InputActionValue);
-	
+	void Run(const FInputActionValue& InputActionValue);
 	void Dash(const FInputActionValue& InputActionValue);
-		
-	void ToggleGravity(const bool Enabled) const;
+	void StartJump(const FInputActionValue& InputActionValue);
+	void StopJump(const FInputActionValue& InputActionValue);
+	void Crouching(const FInputActionValue& InputActionValue);
+	void Weapon(const FInputActionValue& InputActionValue);
+	void Punch(const FInputActionValue& InputActionValue);
+	void Kick(const FInputActionValue& InputActionValue);
+	void Block(const FInputActionValue& InputActionValue);
+	void Grab(const FInputActionValue& InputActionValue);
+	void EquipBow(const FInputActionValue& InputActionValue);
+	void Aim(const FInputActionValue& InputActionValue);
 
-	void EquipSlot(const FInputActionValue& InputActionValue);
-	
-	void BowDraw(const FInputActionValue& InputActionValue);
+private:
+	void HandleAirMovement(UCharacterMovementComponent* CharacterMovement);
+	void ChangeAnimationState(const EAnimationState& Dashing);
+	void ToggleGravity(const bool Enabled) const;
 }; 

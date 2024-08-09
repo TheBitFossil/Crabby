@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Project/Ai/Enemy.h"
+#include "Project/Components/AnimationComboComponent.h"
+#include "Project/Components/InputActionsComponent.h"
 #include "Project/Components/ItemDetectorComponent.h"
 #include "Project/Components/WallDetectorComponent.h"
 #include "Project/Core/PlatformerGameInstance.h"
@@ -29,6 +31,8 @@ APlayerCharacter2D::APlayerCharacter2D()
 
 	ItemDetectorComponent = CreateDefaultSubobject<UItemDetectorComponent>(TEXT("Item Detector"));
 	WallDetectorFront = CreateDefaultSubobject<UWallDetectorComponent>(TEXT("Wall Detector"));
+	InputActionsComponent = CreateDefaultSubobject<UInputActionsComponent>(TEXT("Input Actions Config"));
+	AnimationComboComponent = CreateDefaultSubobject<UAnimationComboComponent>(TEXT("Animation Combo Handler"));
 }
 
 //---------------------------------
@@ -51,8 +55,12 @@ void APlayerCharacter2D::BeginPlay()
 	OnAttackOverrideEndDelegate.BindUObject(this, &APlayerCharacter2D::OnAttackOverrideEndSequence);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter2D::OnAttackCollisionBeginOverlap);
 	ToggleAttackCollisionBox(false);
-	
-	GetCharacterMovement()->GravityScale = CustomGravityScale;
+
+	if(!CMC)
+	{
+		CMC = GetCharacterMovement();
+		CMC->GravityScale = CustomGravityScale;
+	}
 
 	// Init PlayerData
 	GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
@@ -86,7 +94,7 @@ void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
-	
+
 	const float ActionValue = InputActionValue.Get<float>();
 		
 	if(bIsAlive && bIsMovementAllowed)
@@ -108,6 +116,80 @@ void APlayerCharacter2D::MoveCompleted(const FInputActionValue& InputActionValue
 	
 	FRotator LastRotation = GetControlRotation();
 	Controller->SetControlRotation(FRotator(LastRotation.Pitch, LastRotation.Yaw, LastRotation.Roll));
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Run(const FInputActionValue& InputActionValue)
+{
+	if(AnimationState != EAnimationState::Running)
+	{
+		ChangeAnimationState(EAnimationState::Running);
+	}
+	else
+	{
+		ChangeAnimationState(EAnimationState::Walking);
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
+{
+	if(!CMC || !bCanDash)
+	{
+		return;
+	}
+	
+	bCanDash = false;
+	bIsImmortal = true;
+	
+	// Directly update PlayerData struct inside GameInstance 
+	GameInstance->GetLastStaminaRef() = GameInstance->GetStamina();
+	
+	if(GameInstance->GetStamina() > StaminaCostDash)
+	{
+		const FVector DashDirection = GetActorForwardVector();
+		const float AirDashForce = DashForce / 2.f;
+		if(CMC->IsMovingOnGround())
+		{
+			LaunchCharacter(DashDirection * DashForce, true, true);
+		}
+		else
+		{
+			// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
+			LaunchCharacter(DashDirection * AirDashForce, true, true);
+		}
+				
+		// Update Instant Stamina Bar
+		ChangeAnimationState(EAnimationState::Dashing);
+		GameInstance->RemoveStamina(StaminaCostDash);
+
+		// Start Delayed Stamina Tick
+		GetWorldTimerManager().SetTimer(
+			StaminaTickDelegate,
+			this,
+			&APlayerCharacter2D::OnStaminaTickTimeOut,
+			1.f,
+			false,
+			StaminaTickRate
+		);
+
+		// Set the Bar to Zero immediately after Dashing
+		ChangeAnimationState(EAnimationState::Walking);
+		GameInstance->ResetDashBar();
+		bIsImmortal = false;
+		
+		// Start update of the DashBar
+		GetWorldTimerManager().SetTimer(
+			DashTimerDelegate,
+			this,
+			&APlayerCharacter2D::OnDashTimerTimeOut,
+			DashCoolDownTickRate,
+			true,
+			DashCoolDownTickRate
+		);
+	}
 }
 
 //---------------------------------
@@ -142,92 +224,173 @@ void APlayerCharacter2D::StopJump(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
-void APlayerCharacter2D::Attack(const FInputActionValue& InputActionValue)
+void APlayerCharacter2D::Crouching(const FInputActionValue& InputActionValue)
 {
-	if(!bIsAlive || bIsStunned)
+	if(AnimationState != EAnimationState::Crouching)
 	{
-		return;
+		ChangeAnimationState(EAnimationState::Crouching);
+		Crouch();
 	}
-	
-	if(bCanAttack)
+	else
 	{
-		bCanAttack = false;
-		bIsMovementAllowed = false;
-		
-		GetAnimInstance()->PlayAnimationOverride(
-			AttackAnimationSequence,
-			FName("DefaultSlot"),
-			1,
-			0,
-			OnAttackOverrideEndDelegate
-		);
+		ChangeAnimationState(EAnimationState::Walking);
+		UnCrouch();
 	}
 }
 
 //---------------------------------
 
-void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
+void APlayerCharacter2D::Weapon(const FInputActionValue& InputActionValue)
 {
-	UCharacterMovementComponent* CMC = GetCharacterMovement();
-	if(!CMC || !bCanDash)
+	
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Punch(const FInputActionValue& InputActionValue)
+{
+	if(AnimationState != EAnimationState::Punch)
+	{
+		ChangeAnimationState(EAnimationState::Punch);
+		AnimationComboComponent->ChangeAnimation(AnimationState);
+	}
+	else
+	{
+		ChangeAnimationState(EAnimationState::Walking);
+	}
+
+	if(!bIsAlive || bIsStunned)
 	{
 		return;
 	}
-	
-	bCanDash = false;
-	bIsImmortal = true;
-	
-	// Directly update PlayerData struct inside GameInstance 
-	GameInstance->GetLastStaminaRef() = GameInstance->GetStamina();
-	
-	if(GameInstance->GetStamina() > StaminaCostDash)
+
+	if(bCanAttack)
 	{
-		const FVector DashDirection = GetActorForwardVector();
-		const float AirDashForce = DashForce / 2.f;
-		if(CMC->IsMovingOnGround())
-		{
-			LaunchCharacter(DashDirection * DashForce, true, true);
-		}
-		else
-		{
-			// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
-			LaunchCharacter(DashDirection * AirDashForce, true, true);
-		}
-				
-		// Update Instant Stamina Bar
-		GameInstance->RemoveStamina(StaminaCostDash);
-
-		// Start Delayed Stamina Tick
-		GetWorldTimerManager().SetTimer(
-			StaminaTickDelegate,
-			this,
-			&APlayerCharacter2D::OnStaminaTickTimeOut,
-			1.f,
-			false,
-			StaminaTickRate
-		);
-
-		// Set the Bar to Zero immediately after Dashing
-		GameInstance->ResetDashBar();
-		bIsImmortal = false;
-		
-		// Start update of the DashBar
-		GetWorldTimerManager().SetTimer(
-			DashTimerDelegate,
-			this,
-			&APlayerCharacter2D::OnDashTimerTimeOut,
-			DashCoolDownTickRate,
-			true,
-			DashCoolDownTickRate
-		);
+		bCanAttack = false;
+		bIsMovementAllowed = false;
 	}
+	// If we have input play first part of combo
+	// When pressing again
+	// During anim notify event of playing animation
+	// Play next part of combo
+	// Check if we reached the last part of combo
+	// Start from beginning after a long cool down period
+	
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Kick(const FInputActionValue& InputActionValue)
+{
+	if(AnimationState != EAnimationState::Sword)
+	{
+		ChangeAnimationState(EAnimationState::Sword);
+		GetAnimInstance()->JumpToNode(FName("JumpSword"));
+	}
+	else
+	{
+		ChangeAnimationState(EAnimationState::Walking);
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Block(const FInputActionValue& InputActionValue)
+{
+	switch (AnimationState)
+	{
+	case EAnimationState::Walking:
+		ChangeAnimationState(EAnimationState::Block);
+		break;
+	case EAnimationState::Sword:
+		ChangeAnimationState(EAnimationState::Block);
+		break;
+	case EAnimationState::Punch:
+		ChangeAnimationState(EAnimationState::Block);
+		break;
+	default:
+		ChangeAnimationState(EAnimationState::Walking);
+		break;
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Grab(const FInputActionValue& InputActionValue)
+{
+	
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::EquipBow(const FInputActionValue& InputActionValue)
+{
+	if(AnimationState != EAnimationState::Bow)
+	{
+		ChangeAnimationState(EAnimationState::Bow);
+		GetAnimInstance()->JumpToNode(FName("JumpBow"));
+	}
+	else
+	{
+		ChangeAnimationState(EAnimationState::Walking);
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::Aim(const FInputActionValue& InputActionValue)
+{
+	
+}
+
+
+//---------------------------------
+
+void APlayerCharacter2D::ChangeAnimationState(const EAnimationState& NextState)
+{
+	if(AnimationState != NextState)
+	{
+		AnimationState = NextState;
+		
+		switch (NextState)
+		{
+		case EAnimationState::Walking:
+			break;
+		case EAnimationState::Dashing:
+			break;
+		case EAnimationState::Running:
+			break;
+		case EAnimationState::Punch:
+			break;
+		case EAnimationState::Kick:
+			break;
+		case EAnimationState::Block:
+			break;
+		case EAnimationState::Grab:
+			break;
+		case EAnimationState::Sword:
+			break;
+		case EAnimationState::Bow:
+			break;
+		case EAnimationState::Aim:
+			break;
+		case EAnimationState::Crouching:
+			break;
+		case EAnimationState::GettingHit:
+			break;
+		case EAnimationState::Rolling:
+			break;
+		default:
+			break;
+		}
+	}
+
 }
 
 //---------------------------------
 
 void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 {
-	UCharacterMovementComponent* CMC = GetCharacterMovement();
 	if(!CMC)
 	{
 		return;
@@ -240,27 +403,6 @@ void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 	else
 	{
 		CMC->GravityScale = WallJumpGravityScale;
-	}
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::EquipSlot(const FInputActionValue& InputActionValue)
-{
-	bEquippedSlot01 = !bEquippedSlot01;
-	if(bEquippedSlot01)
-	{
-		GetAnimInstance()->JumpToNode(FName("JumpBow_01"));
-	}
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::BowDraw(const FInputActionValue& InputActionValue)
-{
-	if(bEquippedSlot01)
-	{
-		
 	}
 }
 
@@ -487,7 +629,7 @@ void APlayerCharacter2D::OnHealthTickTimeOut()
 
 //---------------------------------
 
-void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
+void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CharacterMovement)
 {
 	if(MovementState == EMoveState::MOVE_Air)
 	{
@@ -498,12 +640,12 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CMC)
 		{
 			// Are we pressing in forward direction , which means we are clinging to the wall
 			const float& DistanceToWall = WallDetectorFront->DetectedWallDistance;
-			if (DistanceToWall < WallHangDistance && (CMC->GetLastInputVector().X > 0.f || CMC->GetLastInputVector().X < 0.f))
+			if (DistanceToWall < WallHangDistance && (CharacterMovement->GetLastInputVector().X > 0.f || CharacterMovement->GetLastInputVector().X < 0.f))
 			{
 				MovementState = EMoveState::MOVE_Wall;
 				
 				// Stop Player from traversing in last Z Direction
-				CMC->Velocity = FVector::Zero();
+				CharacterMovement->Velocity = FVector::Zero();
 			}
 		}
 	}
@@ -515,7 +657,7 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if(UCharacterMovementComponent* CMC = GetCharacterMovement())
+	if(CMC)
 	{
 		if (CMC->IsMovingOnGround())
 		{
@@ -538,20 +680,12 @@ void APlayerCharacter2D::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	if(UEnhancedInputComponent* EnhancedInput = static_cast<UEnhancedInputComponent*>(PlayerInputComponent))
 	{
-		EnhancedInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter2D::Move);
-		EnhancedInput->BindAction(IA_Move, ETriggerEvent::Completed, this, &APlayerCharacter2D::MoveCompleted);
+		if(InputActionsComponent)
+		{
+			
+		}
 		
-		EnhancedInput->BindAction(IA_Jump, ETriggerEvent::Started,this, &APlayerCharacter2D::StartJump);
-		EnhancedInput->BindAction(IA_Jump, ETriggerEvent::Completed, this, &APlayerCharacter2D::StopJump);
 		
-		EnhancedInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter2D::Attack);
-
-		EnhancedInput->BindAction(IA_Dash, ETriggerEvent::Started, this, &APlayerCharacter2D::Dash);
-
-		EnhancedInput->BindAction(IA_Equip_Slot_01, ETriggerEvent::Started, this, &APlayerCharacter2D::EquipSlot);
-
-		EnhancedInput->BindAction(IA_Bow_Draw, ETriggerEvent::Started, this, &APlayerCharacter2D::BowDraw);
-		EnhancedInput->BindAction(IA_Bow_Draw, ETriggerEvent::Completed, this, &APlayerCharacter2D::BowDraw);
 	}
 }
 
