@@ -34,6 +34,7 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 	if (InputConfig.IA_Move)
 	{
 		EnhancedInputComponent->BindAction(InputConfig.IA_Move, ETriggerEvent::Triggered, this, &UInputActionsComponent::Move);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Move, ETriggerEvent::Canceled, this, &UInputActionsComponent::MoveCompleted);
 	}
 
 	if (InputConfig.IA_Run)
@@ -59,9 +60,9 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 		EnhancedInputComponent->BindAction(InputConfig.IA_Crouch, ETriggerEvent::Canceled, this, &UInputActionsComponent::Crouch);
 	}
 	
-	if (InputConfig.IA_Attack)
+	if (InputConfig.IA_Kick)
 	{
-		EnhancedInputComponent->BindAction(InputConfig.IA_Attack, ETriggerEvent::Triggered, this, &UInputActionsComponent::Attack);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Kick, ETriggerEvent::Triggered, this, &UInputActionsComponent::Kick);
 	}
 
 	if (InputConfig.IA_Block)
@@ -70,14 +71,14 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 		EnhancedInputComponent->BindAction(InputConfig.IA_Block, ETriggerEvent::Canceled, this, &UInputActionsComponent::Block);
 	}
 	
-	if (InputConfig.IA_Equip_Melee)
+	if (InputConfig.IA_Punch)
 	{
-		EnhancedInputComponent->BindAction(InputConfig.IA_Equip_Melee, ETriggerEvent::Triggered, this, &UInputActionsComponent::EquipMelee);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Punch, ETriggerEvent::Triggered, this, &UInputActionsComponent::Punch);
 	}
 
-	if (InputConfig.IA_Equip_Sword)
+	if (InputConfig.IA_Grab)
 	{
-		EnhancedInputComponent->BindAction(InputConfig.IA_Equip_Sword, ETriggerEvent::Triggered, this, &UInputActionsComponent::EquipSword);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Grab, ETriggerEvent::Triggered, this, &UInputActionsComponent::Grab);
 	}
 
 	if (InputConfig.IA_Equip_Bow)
@@ -95,23 +96,43 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 
 //---------------------------------
 
-void UInputActionsComponent::Attack(const FInputActionValue& InputActionValue)
+void UInputActionsComponent::Move(const FInputActionValue& InputActionValue)
 {
 	if(PlayerCharacter2D)
 	{
-		PlayerCharacter2D->Attack(InputActionValue);
+		PlayerCharacter2D->Move(InputActionValue);
+	}
+}
+//---------------------------------
+
+void UInputActionsComponent::MoveCompleted(const FInputActionValue& InputActionValue)
+{
+	if(PlayerCharacter2D)
+	{
+		PlayerCharacter2D->MoveCompleted(InputActionValue);
 	}
 }
 
 //---------------------------------
 
-void UInputActionsComponent::Crouch(const FInputActionValue& InputActionValue)
+void UInputActionsComponent::Run(const FInputActionValue& InputActionValue)
 {
 	if(PlayerCharacter2D)
 	{
-		PlayerCharacter2D->Crouching(InputActionValue);
+		PlayerCharacter2D->Run(InputActionValue);
 	}
 }
+
+//---------------------------------
+
+void UInputActionsComponent::Dash(const FInputActionValue& InputActionValue)
+{
+	if(PlayerCharacter2D)
+	{
+		PlayerCharacter2D->Dash(InputActionValue);
+	}
+}
+
 
 //---------------------------------
 
@@ -135,31 +156,42 @@ void UInputActionsComponent::StopJump(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
-void UInputActionsComponent::Dash(const FInputActionValue& InputActionValue)
+void UInputActionsComponent::Crouch(const FInputActionValue& InputActionValue)
 {
 	if(PlayerCharacter2D)
 	{
-		PlayerCharacter2D->Dash(InputActionValue);
+		PlayerCharacter2D->Crouching(InputActionValue);
 	}
 }
 
 //---------------------------------
 
-void UInputActionsComponent::Run(const FInputActionValue& InputActionValue)
+void UInputActionsComponent::Weapon(const FInputActionValue& InputActionValue)
 {
 	if(PlayerCharacter2D)
 	{
-		PlayerCharacter2D->Run(InputActionValue);
+		PlayerCharacter2D->Weapon(InputActionValue);
+	}
+}
+
+
+//---------------------------------
+
+void UInputActionsComponent::Punch(const FInputActionValue& InputActionValue)
+{
+	if(PlayerCharacter2D)
+	{
+		PlayerCharacter2D->Punch(InputActionValue);
 	}
 }
 
 //---------------------------------
 
-void UInputActionsComponent::Move(const FInputActionValue& InputActionValue)
+void UInputActionsComponent::Kick(const FInputActionValue& InputActionValue)
 {
 	if(PlayerCharacter2D)
 	{
-		PlayerCharacter2D->Move(InputActionValue);
+		PlayerCharacter2D->Kick(InputActionValue);
 	}
 }
 
@@ -175,21 +207,11 @@ void UInputActionsComponent::Block(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
-void UInputActionsComponent::EquipMelee(const FInputActionValue& InputActionValue)
+void UInputActionsComponent::Grab(const FInputActionValue& InputActionValue)
 {
 	if(PlayerCharacter2D)
 	{
-		PlayerCharacter2D->EquipMelee(InputActionValue);
-	}
-}
-
-//---------------------------------
-
-void UInputActionsComponent::EquipSword(const FInputActionValue& InputActionValue)
-{
-	if(PlayerCharacter2D)
-	{
-		PlayerCharacter2D->EquipSword(InputActionValue);
+		PlayerCharacter2D->Grab(InputActionValue);
 	}
 }
 
