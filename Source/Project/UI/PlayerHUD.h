@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.generated.h"
 
@@ -44,5 +45,11 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	TObjectPtr<UProgressBar> DashProgressBar;
 
-	void SetLevelTxt(const int Count) const;
+	void SetLevelTxt(const float Count) const;
+	
+	void SetCreditsTxt(const float& Amount);
+	
+	void SetStaminaTxt(const float& MinAmount, const float& MaxAmount);
+	
+	void SetHealthTxt(const float& MinAmount,const float& MaxAmount);
 };
