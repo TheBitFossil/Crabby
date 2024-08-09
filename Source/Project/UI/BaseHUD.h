@@ -35,18 +35,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
 	TObjectPtr<UPlatformerGameInstance> GameInstance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
-	FString HealthString = FString::Printf(TEXT("HP:%0.0f/%0.0f"));
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
-	FString StaminaString = FString::Printf(TEXT("SP:%0.0f/%0.0f"));
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
-	FString CreditsString = FString::Printf(TEXT("%d"));
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|UI")
-	FString LevelString = FString::Printf(TEXT("Lvl %f-%f"));
-
 	UFUNCTION()
 	void OnLevelChanged(const float& CurrentLevel);
 	virtual void BeginPlay() override;
@@ -86,9 +74,11 @@ public:
 	
 	auto UpdateStaminaDelayed(const float& Val) -> void;
 
-	void UpdateCredits(const int& Val);
+	void UpdateCreditsTxt(const float& Val);
 
 	void UpdateDashBar(const float& Val);
+
+	void UpdateLevelTxt(const float& Val);
 	
 	void ResetDashBar();
 };

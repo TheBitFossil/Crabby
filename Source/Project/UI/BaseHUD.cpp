@@ -81,12 +81,11 @@ void ABaseHUD::OnHealthDelayChanged(const float& HPDelayed)
 {
 	UpdateProgressBar(PlayerHudWidget->HealthProgressBarDelayed,HPDelayed, GameInstance->GetMaxHealth());
 
-	FString Msg = FString::Printf(TEXT("HP:%0.0f/%0.0f"), HPDelayed, GameInstance->GetMaxHealth());
 	//TODO:: Change the calls to the (HudWidget) inUse. to PlayerHudWidget->UpdateHealth(FText::FromString)
 	// Goal: Each Widget takes care of how it handles its Visuals
 	// Right now we can only work with this specific property [HealthTxt->]
 	// Any changes to names or type would break compatibility 
-	PlayerHudWidget->HealthTxt->SetText(FText::FromString(Msg));
+	PlayerHudWidget->SetHealthTxt(HPDelayed, GameInstance->GetMaxHealth());
 }
 
 //---------------------------------
@@ -117,29 +116,24 @@ void ABaseHUD::OnDashBarChanged(const float& TimeLeft)
 
 void ABaseHUD::OnCreditsChanged(const float& Credits)
 {
-	UpdateCredits(Credits);
+	UpdateCreditsTxt(Credits);
 }
 
 //---------------------------------
 
 void ABaseHUD::InitHud()
 {
-	
-	
-	const FString Health = FString::Printf(*HealthString, GameInstance->GetHealth(), GameInstance->GetMaxHealth());
-	PlayerHudWidget->HealthTxt->SetText(FText::FromString(Health));
-
+	PlayerHudWidget->SetHealthTxt(GameInstance->GetHealth(), GameInstance->GetMaxHealth());
 	UpdateHPInstant(GameInstance->GetHealth());
 	UpdateHPDelayed(GameInstance->GetHealthDelayed());
 
-	const FString Stamina =	FString::Printf(*StaminaString, GameInstance->GetStamina(), GameInstance->GetMaxStamina());
-	PlayerHudWidget->StaminaTxt->SetText(FText::FromString(Stamina));
-
+	PlayerHudWidget->SetStaminaTxt(GameInstance->GetStamina(), GameInstance->GetMaxStamina());
 	UpdateStaminaInstant(GameInstance->GetStamina());
 	UpdateStaminaDelayed(GameInstance->GetStaminaDelayed());
 
-	UpdateCredits(GameInstance->GetCredits());
+	UpdateCreditsTxt(GameInstance->GetCredits());
 	UpdateDashBar(GameInstance->GetDashCoolDown());
+	UpdateLevelTxt(GameInstance->GetCurrentLevel());
 }
 
 //---------------------------------
@@ -195,10 +189,9 @@ void ABaseHUD::UpdateStaminaDelayed(const float& Val)
 
 //---------------------------------
 
-void ABaseHUD::UpdateCredits(const int& Val)
+void ABaseHUD::UpdateCreditsTxt(const float& Val)
 {
-	const FString Msg = FString::Printf(*CreditsString, Val);
-	PlayerHudWidget->CreditsTxt->SetText(FText::FromString(Msg));
+	PlayerHudWidget->SetCreditsTxt(Val);
 }
 
 //---------------------------------
@@ -206,6 +199,13 @@ void ABaseHUD::UpdateCredits(const int& Val)
 void ABaseHUD::UpdateDashBar(const float& Val)
 {
 	UpdateProgressBar(PlayerHudWidget->DashProgressBar,Val, GameInstance->GetMaxDashCoolDown());
+}
+
+//---------------------------------
+
+void ABaseHUD::UpdateLevelTxt(const float& Val)
+{
+	PlayerHudWidget->SetLevelTxt(Val);
 }
 
 //---------------------------------
@@ -219,5 +219,6 @@ void ABaseHUD::ResetDashBar()
 
 void ABaseHUD::OnLevelChanged(const float& CurrentLevel)
 {
-	PlayerHudWidget->SetLevelTxt(909);
+	UpdateLevelTxt(CurrentLevel);
+	
 }
