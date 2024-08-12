@@ -17,7 +17,7 @@ enum EAnimationState
 	Walking,
 	Dashing,
 	Running,
-	Punching,
+	Melee,
 	Kick,
 	Block,
 	Grab,
@@ -32,13 +32,15 @@ enum EAnimationState
 UENUM(BlueprintType)
 enum class EComboState : uint8
 {
-	ComboStart,
+	None,
+	Combo,
 	ComboEnd
 };
 
 UENUM(BlueprintType)
 enum class EComboType : uint8
 {
+	None	UMETA(DisplayName = "None"),
 	Punch	UMETA(DisplayName ="Punch"),
 	Kick	UMETA(DisplayName ="Kick"),
 	Sword	UMETA(DisplayName ="Sword"),
@@ -48,9 +50,10 @@ enum class EComboType : uint8
 /**
  * Attack Combo Component
  * Handles detection of Hits: AttackCounter
- * Communicates with current Animation: Combo Window
- * Plays correct Animation on Input
+ * Communicates with Animation Blueprint via Notifies and Animation State changes
+ * Should Play correct Animation on Input and blocks further Action if cant transition to next Combo
  */
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECT_API UAnimationComboComponent : public UActorComponent
 {
@@ -60,44 +63,63 @@ public:
 	UAnimationComboComponent();
 
 protected:
+	/* The Character Class which uses this Combo Component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TObjectPtr<APlayerCharacter2D> PlayerCharacter2D = nullptr;
 
+	/* This should reference your Animation Player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation")
 		TObjectPtr<UPaperZDAnimInstance> AnimInstance = nullptr;
 
+	/* Changing this State here, will change the ABP */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation")
-		TEnumAsByte<EAnimationState> AnimationState;
+		TEnumAsByte<EAnimationState> AnimationState{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		UPaperZDAnimSequence* LastSequenceCompleted;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		const UPaperZDAnimSequence* LastSequenceCompleted{};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
-		int32 AttackCounter {};
+		int32 HitCounter {};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
 		bool bHasHit{};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
 		bool bCanComboFromCurrentSequence{};
-	
+
+	/* Time in Seconds to Input new Attack*/
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Animation|Combo")
 		float HitComboWindowTime{2.0f};
 
+	/* Time in Seconds to Player can not Attack after finishing Last Combo Attack*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation|Combo")
 		float ComboCooldownTime{3.0f};
 	
 	FTimerHandle HitComboTimerHandle;
 	FTimerHandle ComboCooldownTimerHandle;
 
+	/* We can either continue our Combo or we are done */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Animation|Datas")
-		EComboState ComboState;
+		EComboState ComboState{};
 
+	/* Cache which was our Last Type of Combo. You might want to make adjustments Punch->Kick etc. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Animation|Datas")
-		EComboType LastComboType;
+		EComboType ComboInputType{};
 
+	/* This is where you store your Assets Data. Right now Data Assets for each type of Combo with Arrays of Animations. */
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Animation|Datas")
-		TMap<EComboType, TObjectPtr<UAnimationDataAsset>> ComboDataAssets;
+		TMap<EComboType, TObjectPtr<UAnimationDataAsset>> ComboDataAssets{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		UPaperZDAnimSequence* ComboAttackOverrideAnimationSequence{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		EAnimationDataType ComboAnimationDataType{};
+	
+	FZDOnAnimationOverrideEndSignature OnComboAttackOverrideDelegate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		int MaxComboCount{};
 
 	virtual void BeginPlay() override;
 
@@ -107,21 +129,29 @@ protected:
 	UFUNCTION()
 	void OnSequenceChanged(const UPaperZDAnimSequence* From, const UPaperZDAnimSequence* To, float CurrentProgress);
 
-	void PlayNextComboSequence(const int32 Counter);
+	UFUNCTION()
+	void OnComboAttackOverride(bool Completed);
+
+	void PlayNextComboSequence();
 	
 public:
 	TEnumAsByte<EAnimationState>& GetAnimationState() {return AnimationState;}
 	void SetAnimationState(const EAnimationState& NextState);
 
 	UFUNCTION(BlueprintCallable)
-	void StartComboSequence();
+	void AttackCombo(const EAnimationState& AttackInput);
 
 	UFUNCTION(BlueprintCallable)
-	bool TryComboAttack();
+	void ComboAttack();
 
-	UFUNCTION()
-	void SetHasHit(const bool Success) {bHasHit = Success;}
+	/* Called only from the ABP via AnimNotify */
+	UFUNCTION(BlueprintCallable)
+	void SetHasHit(const bool Success);
 
+	UFUNCTION(BlueprintCallable)
+	bool GetHasHit() const {return bHasHit;}
+	
+	/* Called only from the Player when he has Hit a target. */
 	UFUNCTION(BlueprintCallable)
 	void StartComboWindowTimer();
 
@@ -133,11 +163,13 @@ public:
 
 	UFUNCTION()
 	void OnCooldownTimerTimeOut();
-	
+
+	/* To end a Combo, add Animation Notify to your last Animation from the DataAsset Array. */
 	void OnAnimNotifyComboHasEnded(bool bIsActive, const UPaperZDAnimSequence* PaperZdAnimSequence);
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	/* Internal check if we can Attack. Can block further Player Input */
 	UFUNCTION(BlueprintCallable)
 	bool CanAttack();
 };

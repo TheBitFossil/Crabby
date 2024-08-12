@@ -250,36 +250,26 @@ void APlayerCharacter2D::Crouching(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::Weapon(const FInputActionValue& InputActionValue)
 {
-	
+	AnimationComboComponent->AttackCombo(EAnimationState::Sword);
 }
 
 //---------------------------------
 
 void APlayerCharacter2D::Punch(const FInputActionValue& InputActionValue)
 {
-	if(!bIsAlive || bIsStunned)
+	if(!bIsAlive || bIsStunned || !AnimationComboComponent->CanAttack())
 	{
 		return;
 	}
 
-	if(AnimationComboComponent->CanAttack())
-	{
-		if(AnimationComboComponent->GetAnimationState() != Punching)
-		{
-			AnimationComboComponent->SetAnimationState(Punching);
-		}
-		else
-		{
-			AnimationComboComponent->TryComboAttack();
-		}
-	}
+	AnimationComboComponent->AttackCombo(EAnimationState::Melee);
 }
 
 //---------------------------------
 
 void APlayerCharacter2D::Kick(const FInputActionValue& InputActionValue)
 {
-		GetAnimInstance()->JumpToNode(FName("JumpSword"));
+	AnimationComboComponent->AttackCombo(EAnimationState::Kick);
 }
 
 //---------------------------------
@@ -655,7 +645,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 		// Update: Instant HP Bar
 		GameInstance->RemoveHealthInstant(ActualDamage);
 		
-		GetAnimInstance()->JumpToNode(FName("JumpTakeDmg"));
+		GetAnimInstance()->JumpToNode(FName("JumpHurt"));
 
 		bIsStunned = true;
 		

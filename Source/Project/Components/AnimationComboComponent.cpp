@@ -9,10 +9,6 @@
 
 
 UAnimationComboComponent::UAnimationComboComponent()
-	:	AnimationState(),
-		LastSequenceCompleted(nullptr),
-		ComboState(),
-		LastComboType()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -32,6 +28,8 @@ void UAnimationComboComponent::BeginPlay()
 			AnimInstance->GetPlayer()->OnPlaybackSequenceChanged.AddDynamic(this, &UAnimationComboComponent::OnSequenceChanged);
 		}
 	}
+
+	OnComboAttackOverrideDelegate.BindUObject(this, &UAnimationComboComponent::OnComboAttackOverride);
 }
 
 
@@ -57,66 +55,102 @@ bool UAnimationComboComponent::CanAttack()
 	}
 	
 	// Is Animation Over or Is Animation ready for Combo transition
-	if(AnimInstance->GetPlayer()->GetPlaybackProgress() >= 1.f || bCanComboFromCurrentSequence)
-	{
-		return true;
-	}
-	
-	UE_LOG(LogTemp, Error, TEXT("CanAttack(false), this case is not handled. Aborted!"));
-	return false;
+	//UE_LOG(LogTemp, Error, TEXT("CanAttack(false), this case is not handled. Aborted!"));
+	return true;
 }
 
 //---------------------------------
 
 
-bool UAnimationComboComponent::TryComboAttack()
+void UAnimationComboComponent::ComboAttack()
 {
 	if(!CanAttack())
 	{
 		UE_LOG(LogTemp, Error, TEXT("UAnimationComboComponent->TryComboAttack(false):State(%d) SequenceReady(%d)"), GetAnimationState(), bCanComboFromCurrentSequence);
-		return false;
+		return;
 	}
 
 	// Is the Combo Window Open ?
-	if(bHasHit && ComboState != EComboState::ComboEnd)
+	if(bHasHit)
 	{
 		// This gets stopped only if an Animation is set to Call the OnComboEndNotify
-		AttackCounter += 1;
-		PlayNextComboSequence(AttackCounter);
-		return true;
+		PlayNextComboSequence();
 	}
-	// The ABP starts the first Animation from Changing this AnimationState
-	StartComboSequence();
-	return false;
 }
 
 //---------------------------------
 
-void UAnimationComboComponent::PlayNextComboSequence(const int32 Counter)
+void UAnimationComboComponent::SetHasHit(const bool Success)
+{
+	bHasHit = Success;
+
+	if(bHasHit)
+	{
+		HitCounter += 1;
+		
+		StartComboWindowTimer();
+	}
+}
+
+//---------------------------------
+
+void UAnimationComboComponent::SetAnimationState(const EAnimationState& NextState)
+{
+	AnimationState = NextState;
+	UE_LOG(LogTemp, Warning, TEXT("StateChanged to->%s"), *UEnum::GetValueAsString(AnimationState));
+}
+
+//---------------------------------
+
+void UAnimationComboComponent::AttackCombo(const EAnimationState& AttackInput)
 {
 	// What type of Attack was it ?
-	if(UAnimationDataAsset* DataAsset = ComboDataAssets.FindRef(LastComboType))
+	switch (AttackInput)
+	{
+	case Melee:
+		ComboInputType = EComboType::Punch;
+		break;
+	case Kick:
+		ComboInputType = EComboType::Kick;
+		break;
+	case Sword:
+		ComboInputType = EComboType::Sword;
+		break;
+	default:
+		ComboInputType = EComboType::None;
+		break;
+	}
+
+	// Do we have Combo Attacks for this type ?
+	if(UAnimationDataAsset* ComboData = ComboDataAssets.FindRef(ComboInputType))
 	{
 		// How many Combo Sequences do we have available ?
-		int MaxComboCount = DataAsset->GetAnimationCount();
-
-		// We can still play more Sequences
-		if(AttackCounter < MaxComboCount)
+		MaxComboCount = ComboData->GetAnimationCount();
+		if(HitCounter <= MaxComboCount)
 		{
 			// Get the next Animation Sequence
 			TSoftObjectPtr<UPaperZDAnimSequence> NextSequence =
-				DataAsset->Data.AnimationSequences[AttackCounter];
+				ComboData->Data.AnimationSequences[HitCounter];
 
 			if(NextSequence.IsValid())
 			{
-				// Play the next Combo from our Data, so we know which Data we played last
-				AnimInstance->GetPlayer()->PlaySingleAnimation(NextSequence.Get(), 0.f);
+				ComboAttackOverrideAnimationSequence = NextSequence.Get();
+				ComboAnimationDataType = ComboData->GetAnimationType();
+				
+				// Play the next Combo from our Data
+				AnimInstance->PlayAnimationOverride(
+					ComboAttackOverrideAnimationSequence,
+					FName("DefaultSlot"),
+					1.f,
+					0.f,
+					OnComboAttackOverrideDelegate
+				);
 			}
 		}
 		else
 		{
 			// Combo Counter is higher than possible Attack animations
-			UE_LOG(LogTemp, Warning, TEXT("Triggering combo end->NO more Animations in Sequence. To set Final Combo->last animation inside the Data Asset should call AnimNotify_ComboEnd."));
+			UE_LOG(LogTemp, Warning, TEXT("AttackCombo-> HitCounter(%f) ArraySize(%f"), HitCounter, MaxComboCount);
 			OnAnimNotifyComboHasEnded(true, AnimInstance->GetPlayer()->GetCurrentAnimSequence());
 		}
 	}
@@ -129,71 +163,14 @@ void UAnimationComboComponent::PlayNextComboSequence(const int32 Counter)
 
 //---------------------------------
 
-void UAnimationComboComponent::SetAnimationState(const EAnimationState& NextState)
-{
-	AnimationState = NextState;
-
-	switch (AnimationState)
-	{
-	case Sword:
-		AnimInstance->JumpToNode(FName("JumpSword"));
-		LastComboType = EComboType::Sword;
-		break;
-	case Walking:
-		break;
-	case Dashing:
-		break;
-	case Running:
-		break;
-	case Punching:
-		AnimInstance->JumpToNode(FName("JumpPunch"));
-		LastComboType = EComboType::Punch;
-		break;
-	case Kick:
-		AnimInstance->JumpToNode(FName("JumpKick"));
-		LastComboType = EComboType::Kick;
-		break;
-	case Block:
-		break;
-	case Grab:
-		break;
-	case Bow:
-		break;
-	case Aim:
-		break;
-	case Crouched:
-		break;
-	case GettingHit:
-		break;
-	case Rolling:
-		break;
-	default:
-		break;
-	}
-}
-
-//---------------------------------
-
-void UAnimationComboComponent::StartComboSequence()
-{
-	ComboState = EComboState::ComboStart;
-	if(AttackCounter != 0)
-	{
-		AttackCounter = 0;
-	}
-}
-
-//---------------------------------
-
 void UAnimationComboComponent::StartComboWindowTimer()
 {
 	GetWorld()->GetTimerManager().SetTimer(
 		HitComboTimerHandle,
 		this,
 		&UAnimationComboComponent::OnHitComboTimerTimeOut,
-		1.0f,
-		false,
-		HitComboWindowTime
+		HitComboWindowTime,
+		false
 	);
 }
 
@@ -201,6 +178,7 @@ void UAnimationComboComponent::StartComboWindowTimer()
 void UAnimationComboComponent::StopComboWindowTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(HitComboTimerHandle);
+	AnimationState = Walking;
 }
 
 //---------------------------------
@@ -208,6 +186,10 @@ void UAnimationComboComponent::StopComboWindowTimer()
 void UAnimationComboComponent::OnHitComboTimerTimeOut()
 {
 	SetHasHit(false);
+	
+	AnimationState = Walking;
+
+	ComboState = EComboState::None;
 }
 
 //---------------------------------
@@ -216,8 +198,10 @@ void UAnimationComboComponent::OnAnimNotifyComboHasEnded(bool bHasEnded, const U
 {
 	if(bHasEnded)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded->(HasEnded(%d), Sequence->(%s)"), bHasEnded, *LastSequencePlayed);
 		ComboState = EComboState::ComboEnd;
-		AttackCounter = 0.f;
+
+		HitCounter = 0.f;
 
 		GetWorld()->GetTimerManager().SetTimer(
 			ComboCooldownTimerHandle,
@@ -236,18 +220,25 @@ void UAnimationComboComponent::OnCooldownTimerTimeOut()
 {
 	// We have just played the last Combo Sequence and waited for ComboCooldownTime
 	// Start from beginning
-	ComboState = EComboState::ComboStart;
-	if(AttackCounter != 0.f)
-	{
-		AttackCounter = 0.f;
-	}
+	ComboState = EComboState::None;
+	
+	AnimationState = Walking;
 }
 
 //---------------------------------
 
 void UAnimationComboComponent::OnSequenceComplete(const UPaperZDAnimSequence* AnimSequence)
 {
+	// Back to idle Anim, Combo Window is open
+	AnimationState = Walking;
+
+	if(HitCounter != 0)
+	{
+		ComboState = EComboState::Combo;
+	}
 	
+	// Cache last Seq for Debug
+	LastSequenceCompleted = AnimSequence;
 }
 
 //---------------------------------
@@ -256,4 +247,21 @@ void UAnimationComboComponent::OnSequenceChanged(const UPaperZDAnimSequence* Fro
 														float CurrentProgress)
 {
 	
+}
+
+
+//---------------------------------
+
+void UAnimationComboComponent::OnComboAttackOverride(bool Completed)
+{
+	if(!Completed)
+	{
+		UE_LOG(LogTemp, Error, TEXT("OnComboAttackOverride->Error Override not comleted."));
+	}
+	
+	// Override can be played, Set to Combo state
+	if(HitCounter != 0)
+	{
+		ComboState = EComboState::Combo;
+	}
 }
