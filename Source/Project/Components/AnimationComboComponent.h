@@ -121,6 +121,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
 		int MaxComboCount{};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		bool bOverrideCompleted {};
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -132,8 +135,6 @@ protected:
 	UFUNCTION()
 	void OnComboAttackOverride(bool Completed);
 
-	void PlayNextComboSequence();
-	
 public:
 	TEnumAsByte<EAnimationState>& GetAnimationState() {return AnimationState;}
 	void SetAnimationState(const EAnimationState& NextState);
@@ -141,8 +142,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttackCombo(const EAnimationState& AttackInput);
 
-	UFUNCTION(BlueprintCallable)
-	void ComboAttack();
+	/* Called only from the Player when he has Hit a target. */
+	void StartTimer(FTimerHandle& TimerHandle, void (UAnimationComboComponent::*TimerCallBack)(), float TimerDuration);
+
+	void StopTimer(FTimerHandle& TimerHandle);
 
 	/* Called only from the ABP via AnimNotify */
 	UFUNCTION(BlueprintCallable)
@@ -151,12 +154,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetHasHit() const {return bHasHit;}
 	
-	/* Called only from the Player when he has Hit a target. */
-	UFUNCTION(BlueprintCallable)
-	void StartComboWindowTimer();
-
-	UFUNCTION(BlueprintCallable)
-	void StopComboWindowTimer();
 
 	UFUNCTION()
 	void OnHitComboTimerTimeOut();

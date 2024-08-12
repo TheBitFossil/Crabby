@@ -50,8 +50,6 @@ void APlayerCharacter2D::BeginPlay()
 		}
 	}
 
-	/* notify when animation is complete*/
-	OnAttackOverrideEndDelegate.BindUObject(this, &APlayerCharacter2D::OnAttackOverrideEndSequence);
 	AttackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter2D::OnAttackCollisionBeginOverlap);
 	ToggleAttackCollisionBox(false);
 
@@ -617,7 +615,6 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 			//TODO:: Make IDamageable
 			// We have Hit a viable Target Start ComboWindow
 			AnimationComboComponent->SetHasHit(true);
-			AnimationComboComponent->StartComboWindowTimer();
 		}
 	}
 }

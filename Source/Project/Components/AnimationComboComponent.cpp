@@ -48,34 +48,15 @@ void UAnimationComboComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 bool UAnimationComboComponent::CanAttack()
 {
-	// Is Current State hindering our Ability ?
-	if(GetAnimationState() == Dashing || ComboState == EComboState::ComboEnd)
+	// Is any Current State hindering our Ability ?
+	if(GetAnimationState() == Dashing || ComboState == EComboState::ComboEnd || bOverrideCompleted )
 	{
+		UE_LOG(LogTemp, Error, TEXT("CanAttack(false), this case is not handled. Aborted!"));
 		return false;
 	}
 	
-	// Is Animation Over or Is Animation ready for Combo transition
-	//UE_LOG(LogTemp, Error, TEXT("CanAttack(false), this case is not handled. Aborted!"));
+	UE_LOG(LogTemp, Warning, TEXT("CanAttack(true)"));
 	return true;
-}
-
-//---------------------------------
-
-
-void UAnimationComboComponent::ComboAttack()
-{
-	if(!CanAttack())
-	{
-		UE_LOG(LogTemp, Error, TEXT("UAnimationComboComponent->TryComboAttack(false):State(%d) SequenceReady(%d)"), GetAnimationState(), bCanComboFromCurrentSequence);
-		return;
-	}
-
-	// Is the Combo Window Open ?
-	if(bHasHit)
-	{
-		// This gets stopped only if an Animation is set to Call the OnComboEndNotify
-		PlayNextComboSequence();
-	}
 }
 
 //---------------------------------
@@ -88,7 +69,7 @@ void UAnimationComboComponent::SetHasHit(const bool Success)
 	{
 		HitCounter += 1;
 		
-		StartComboWindowTimer();
+		StartTimer(HitComboTimerHandle, &UAnimationComboComponent::OnHitComboTimerTimeOut, HitComboWindowTime);
 	}
 }
 
@@ -120,65 +101,64 @@ void UAnimationComboComponent::AttackCombo(const EAnimationState& AttackInput)
 		ComboInputType = EComboType::None;
 		break;
 	}
-
+	UE_LOG(LogTemp, Warning, TEXT("ComboInputType->%s"), *UEnum::GetValueAsString(ComboInputType));
+	
 	// Do we have Combo Attacks for this type ?
 	if(UAnimationDataAsset* ComboData = ComboDataAssets.FindRef(ComboInputType))
 	{
 		// How many Combo Sequences do we have available ?
 		MaxComboCount = ComboData->GetAnimationCount();
-		if(HitCounter <= MaxComboCount)
-		{
-			// Get the next Animation Sequence
-			TSoftObjectPtr<UPaperZDAnimSequence> NextSequence =
-				ComboData->Data.AnimationSequences[HitCounter];
-
-			if(NextSequence.IsValid())
-			{
-				ComboAttackOverrideAnimationSequence = NextSequence.Get();
-				ComboAnimationDataType = ComboData->GetAnimationType();
-				
-				// Play the next Combo from our Data
-				AnimInstance->PlayAnimationOverride(
-					ComboAttackOverrideAnimationSequence,
-					FName("DefaultSlot"),
-					1.f,
-					0.f,
-					OnComboAttackOverrideDelegate
-				);
-			}
-		}
-		else
+		if(HitCounter >= MaxComboCount)
 		{
 			// Combo Counter is higher than possible Attack animations
-			UE_LOG(LogTemp, Warning, TEXT("AttackCombo-> HitCounter(%f) ArraySize(%f"), HitCounter, MaxComboCount);
+			UE_LOG(LogTemp, Warning, TEXT("AttackCombo-> HitCounter(%d) ArraySize(%d)"), HitCounter, MaxComboCount);
+
 			OnAnimNotifyComboHasEnded(true, AnimInstance->GetPlayer()->GetCurrentAnimSequence());
+			return;
+		}
+		
+			// Get the next Animation Sequence
+		if(TSoftObjectPtr<UPaperZDAnimSequence> NextSequence = ComboData->Data.AnimationSequences[HitCounter])
+		{
+			ComboAttackOverrideAnimationSequence = NextSequence.Get();
+			ComboAnimationDataType = ComboData->GetAnimationType();
+			
+			// Play the next Combo from our Data
+			AnimInstance->PlayAnimationOverride(
+				ComboAttackOverrideAnimationSequence,
+				FName("DefaultSlot"),
+				1.f,
+				0.f,
+				OnComboAttackOverrideDelegate
+			);
 		}
 	}
 	else
 	{
 		// Handle the case where the DataAsset is not found for the current state
-		UE_LOG(LogTemp, Warning, TEXT("No DataAsset found for the current animation state"));
+		UE_LOG(LogTemp, Warning, TEXT("No DataAsset found for the current animation state(%s)"), *UEnum::GetValueAsString(ComboState));
 	}
 }
 
 //---------------------------------
 
-void UAnimationComboComponent::StartComboWindowTimer()
+void UAnimationComboComponent::StartTimer(FTimerHandle& TimerHandle, void(UAnimationComboComponent::*TimerCallBack)(), float TimerDuration)
 {
 	GetWorld()->GetTimerManager().SetTimer(
-		HitComboTimerHandle,
+		TimerHandle,
 		this,
-		&UAnimationComboComponent::OnHitComboTimerTimeOut,
-		HitComboWindowTime,
-		false
+		TimerCallBack,
+		TimerDuration
 	);
 }
 
 //---------------------------------
-void UAnimationComboComponent::StopComboWindowTimer()
+
+void UAnimationComboComponent::StopTimer(FTimerHandle& TimerHandle)
 {
-	GetWorld()->GetTimerManager().ClearTimer(HitComboTimerHandle);
-	AnimationState = Walking;
+	SetAnimationState(Walking);
+	
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
 //---------------------------------
@@ -187,8 +167,8 @@ void UAnimationComboComponent::OnHitComboTimerTimeOut()
 {
 	SetHasHit(false);
 	
-	AnimationState = Walking;
-
+	SetAnimationState(Walking);
+	
 	ComboState = EComboState::None;
 }
 
@@ -198,19 +178,15 @@ void UAnimationComboComponent::OnAnimNotifyComboHasEnded(bool bHasEnded, const U
 {
 	if(bHasEnded)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded->(HasEnded(%d), Sequence->(%s)"), bHasEnded, *LastSequencePlayed);
+		UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded -> (HasEnded: %s), Sequence: %s"), 
+			   bHasEnded ? TEXT("True") : TEXT("False"), 
+			   *LastSequencePlayed->GetName());
+		
 		ComboState = EComboState::ComboEnd;
 
 		HitCounter = 0.f;
 
-		GetWorld()->GetTimerManager().SetTimer(
-			ComboCooldownTimerHandle,
-			this,
-			&UAnimationComboComponent::OnCooldownTimerTimeOut,
-			1.f,
-			false,
-			ComboCooldownTime
-		);
+		StartTimer(ComboCooldownTimerHandle,&UAnimationComboComponent::OnCooldownTimerTimeOut, ComboCooldownTime);
 	}
 }
 
@@ -239,6 +215,11 @@ void UAnimationComboComponent::OnSequenceComplete(const UPaperZDAnimSequence* An
 	
 	// Cache last Seq for Debug
 	LastSequenceCompleted = AnimSequence;
+	if(LastSequenceCompleted == ComboAttackOverrideAnimationSequence)
+	{
+		// Handle the case where the DataAsset is not found for the current state
+		UE_LOG(LogTemp, Warning, TEXT("((%s) == (%s))"), *LastSequenceCompleted->GetName(), *ComboAttackOverrideAnimationSequence->GetName());
+	}
 }
 
 //---------------------------------
@@ -254,14 +235,13 @@ void UAnimationComboComponent::OnSequenceChanged(const UPaperZDAnimSequence* Fro
 
 void UAnimationComboComponent::OnComboAttackOverride(bool Completed)
 {
-	if(!Completed)
-	{
-		UE_LOG(LogTemp, Error, TEXT("OnComboAttackOverride->Error Override not comleted."));
-	}
+	UE_LOG(LogTemp, Warning, TEXT("bOverrideCompleted->(%s)"), Completed ? TEXT("True") : TEXT("False"));
 	
+	/*
 	// Override can be played, Set to Combo state
 	if(HitCounter != 0)
 	{
 		ComboState = EComboState::Combo;
 	}
+	*/
 }
