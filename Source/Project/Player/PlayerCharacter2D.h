@@ -25,7 +25,7 @@ class UPlayerHUD;
  * 
  */
 
-UENUM()
+UENUM(BlueprintType)
 enum class EMoveState : uint8
 {
 	MOVE_Ground,
@@ -33,23 +33,7 @@ enum class EMoveState : uint8
 	MOVE_Wall
 };
 
-UENUM()
-enum class EAnimationState : int32
-{
-	Walking,
-	Dashing,
-	Running,
-	Punch,
-	Kick,
-	Block,
-	Grab,
-	Sword,
-	Bow,
-	Aim,
-	Crouching,
-	GettingHit,
-	Rolling,
-};
+
 
 UCLASS()
 class PROJECT_API APlayerCharacter2D : public APaperZDCharacter
@@ -76,7 +60,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Attack)
 		TObjectPtr<UBoxComponent> AttackCollisionBox;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TObjectPtr<UWallDetectorComponent> WallDetectorFront;
 
@@ -91,16 +75,22 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
 		TObjectPtr<UAnimationComboComponent> AnimationComboComponent;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 		TObjectPtr<UCharacterMovementComponent> CMC;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
+		float WalkSpeed{200.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
+		float RunSpeed{400.f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
 		int32 DamageTaken {};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Attack")
 		float AttackDmg{10.f};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
 		float HealthTickRate{1.f};
 
@@ -109,10 +99,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
 		float StaminaTickRate{1.f};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
 		int32 StaminaRemovePerTick{20};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		float StunDuration{.3f};
 
@@ -120,38 +110,40 @@ protected:
 		float DashForce{1000.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
-		float DashCoolDownTickRate{.2f};		// Visual Update Rate
+		float DashCoolDownTickRate{.2f};
+	// Visual Update Rate
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
-		float DashCoolDownTickAmount{0.1f};		// Amount added per Tick 
+		float DashCoolDownTickAmount{0.1f};
+	// Amount added per Tick 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		float CurrentDashTimer{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		int32 StaminaRegenAmount{10};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		float StaminaRegenTickRate{1.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		int32 StaminaCostDash{25};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
-		float WallHangDuration{2.f};
+		float WallJumpCustomGravityDuration{2.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
 		float WallJumpForce{500.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
 		float WallHangDistance {24.f};
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement", meta=(ClampMin = "0.1", ClampMax = "4"))
 		float CustomGravityScale {2.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(ClampMin = "0.1", ClampMax = "4"))
 		float WallJumpGravityScale {.35f};
-	
+
 	UPROPERTY(VisibleAnywhere, Category="Gameplay|Movement")
 		FVector LastJumpLocation{};
 
@@ -162,13 +154,10 @@ protected:
 
 	FTimerHandle HealthTickDelegate;
 	FTimerHandle StaminaTickDelegate;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		EMoveState MovementState;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
-		EAnimationState AnimationState;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
 		TObjectPtr<UPlatformerGameInstance> GameInstance;
 
@@ -176,6 +165,9 @@ protected:
 		bool bEquippedSlot01 {false};
 
 public:
+	UFUNCTION(BlueprintCallable)
+	UAnimationComboComponent* GetComboComponent() const {return AnimationComboComponent;}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 		bool bIsAlive {true};
 
@@ -190,13 +182,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|WallJump")
 		bool bIsWallInRange{false};
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Gameplay)
 		bool bIsImmortal{false};
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category=Gameplay)
 		bool bIsStunned{false};
-
+	
 	UFUNCTION(BlueprintCallable)
 	void ToggleAttackCollisionBox(bool Enabled);
 
@@ -204,9 +196,16 @@ public:
 	FORCEINLINE FVector GetLastJumpLocation() const {return LastJumpLocation;}
 
 	FORCEINLINE EMoveState GetCurrentMoveState() const {return MovementState;}
-	
+
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	                         AController* EventInstigator, AActor* DamageCauser) override;
+	
+	void OnAnimNotifyDashEnded();
+
+	void OnIsMovementAllowed(const bool bIsActive);
+	
+	void OnIsAttackAllowed(bool bIsActive);
 
 private:
 	virtual void BeginPlay() override;
@@ -238,6 +237,8 @@ private:
 	void OnDashTimerTimeOut();
 	
 	void OnStaminaRegenTimeOut();
+
+	void HealthDepleted();
 	
 	UFUNCTION()
 	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
@@ -245,10 +246,6 @@ private:
 	
 	virtual void Tick(float DeltaSeconds) override;
 	
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
-	void SetDirectionFacing(const float ActionValue);
-
 public:
 	void Move(const FInputActionValue& InputActionValue);
 	void MoveCompleted(const FInputActionValue& InputActionValue);
@@ -264,9 +261,9 @@ public:
 	void Grab(const FInputActionValue& InputActionValue);
 	void EquipBow(const FInputActionValue& InputActionValue);
 	void Aim(const FInputActionValue& InputActionValue);
+	void SetDirectionFacing(const float ActionValue);
 
 private:
 	void HandleAirMovement(UCharacterMovementComponent* CharacterMovement);
-	void ChangeAnimationState(const EAnimationState& Dashing);
 	void ToggleGravity(const bool Enabled) const;
 }; 
