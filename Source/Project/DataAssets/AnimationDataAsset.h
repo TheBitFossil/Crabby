@@ -23,22 +23,27 @@ USTRUCT(BlueprintType)
 struct FAnimationData
 {
 	GENERATED_BODY()
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	int AnimationCount{0};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	int AnimationCost{0};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	int AnimationDamage{0};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	EAnimationDataType AnimationType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	TArray<TSoftObjectPtr<UPaperZDAnimSequence>> AnimationSequences;
 };
 
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class PROJECT_API UAnimationDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
