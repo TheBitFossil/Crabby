@@ -3,20 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AnimNotifyStateBase.h"
-#include "AnimNotifyState_Dashing.generated.h"
+#include "AnimNotify_Base.h"
+#include "AnimNotify_DashEnded.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_API UAnimNotifyState_Dashing : public UAnimNotifyStateBase
+class PROJECT_API UAnimNotify_DashEnded : public UAnimNotify_Base
 {
 	GENERATED_BODY()
-	UAnimNotifyState_Dashing();
-
+public:
+	UAnimNotify_DashEnded();
+	
 protected:
+	virtual void OnReceiveNotify_Implementation(UPaperZDAnimInstance* OwningInstance) const override;
+	virtual void OnNotifyAborted(UPaperZDAnimInstance* OwningInstance) const override;
 	virtual void TickNotify(float DeltaTime, float Playtime, float LastPlaybackTime, UPrimitiveComponent* AnimRenderComponent, bool& bPersistentActiveState, UPaperZDAnimInstance* OwningInstance) const override;
-
-	virtual void OnNotifyEnd_Implementation(UPaperZDAnimInstance* OwningInstance) const override;
+	
 };
