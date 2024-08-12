@@ -220,7 +220,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 //---------------------------------
 
-void AEnemy::OnJumpCoolDownTimerTimeout()
+void AEnemy::OnJumpCoolDownTimerTimeOut()
 {
 	GetCharacterMovement()->SetJumpAllowed(true);
 }

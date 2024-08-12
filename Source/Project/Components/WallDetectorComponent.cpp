@@ -40,14 +40,13 @@ bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
 		QueryParams.AddIgnoredActor(IgnoredActor);      
 	}
 	
-	bool bHit = GetWorld()->LineTraceMultiByChannel(HitResults, StartLocation, End,
-														ECC_WorldStatic, QueryParams);
+	bool bHit = GetWorld()->LineTraceMultiByChannel(HitResults, StartLocation, End,ECC_WorldStatic, QueryParams);
 	if(bHit)
 	{
 		for (const FHitResult& Hit : HitResults)
 		{
-			DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
-				FColor::Red, false, 1.f);
+			//DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
+			//	FColor::Red, false, 1.f);
 
 			if(Hit.GetComponent()->GetCollisionObjectType() == ECC_WorldStatic)
 			{
@@ -55,8 +54,7 @@ bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
 				//						Hit.Component->GetName());
 
 				const float Distance = FVector::Dist(GetOwner()->GetActorLocation(), Hit.ImpactPoint);
-				GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,
-										FString::Printf(TEXT("Distance: %f"), Distance));
+				//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,FString::Printf(TEXT("Distance: %f"), Distance));
 
 				DetectedWallDistance = Distance;
 				return true;
@@ -64,6 +62,6 @@ bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
 		}
 	}
 
-	DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
+	//DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
 	return false;
 }

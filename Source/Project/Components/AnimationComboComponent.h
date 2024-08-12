@@ -9,6 +9,42 @@
 
 class UPaperZDAnimInstance;
 class APlayerCharacter2D;
+class UAnimationDataAsset;
+
+UENUM(BlueprintType)
+enum EAnimationState
+{
+	Walking,
+	Dashing,
+	Running,
+	Punching,
+	Kick,
+	Block,
+	Grab,
+	Sword,
+	Bow,
+	Aim,
+	Crouched,
+	GettingHit,
+	Rolling
+};
+
+UENUM(BlueprintType)
+enum class EComboState : uint8
+{
+	ComboStart,
+	ComboEnd
+};
+
+UENUM(BlueprintType)
+enum class EComboType : uint8
+{
+	Punch	UMETA(DisplayName ="Punch"),
+	Kick	UMETA(DisplayName ="Kick"),
+	Sword	UMETA(DisplayName ="Sword"),
+};
+
+
 /**
  * Attack Combo Component
  * Handles detection of Hits: AttackCounter
@@ -27,19 +63,81 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TObjectPtr<APlayerCharacter2D> PlayerCharacter2D = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation")
 		TObjectPtr<UPaperZDAnimInstance> AnimInstance = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation")
+		TEnumAsByte<EAnimationState> AnimationState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		UPaperZDAnimSequence* LastSequenceCompleted;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
+		int32 AttackCounter {};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
+		bool bHasHit{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
+		bool bCanComboFromCurrentSequence{};
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Animation|Combo")
+		float HitComboWindowTime{2.0f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation|Combo")
+		float ComboCooldownTime{3.0f};
+	
+	FTimerHandle HitComboTimerHandle;
+	FTimerHandle ComboCooldownTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Animation|Datas")
+		EComboState ComboState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Animation|Datas")
+		EComboType LastComboType;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Animation|Datas")
+		TMap<EComboType, TObjectPtr<UAnimationDataAsset>> ComboDataAssets;
+
 	virtual void BeginPlay() override;
-	void Melee(const FInputActionValue& InputActionValue);
-	void Sword(const FInputActionValue& InputActionValue);
-	void Bow(const FInputActionValue& InputActionValue);
+
+	UFUNCTION()
+	void OnSequenceComplete(const UPaperZDAnimSequence* AnimSequence);
+
+	UFUNCTION()
+	void OnSequenceChanged(const UPaperZDAnimSequence* From, const UPaperZDAnimSequence* To, float CurrentProgress);
+
+	void PlayNextComboSequence(const int32 Counter);
 	
 public:
+	TEnumAsByte<EAnimationState>& GetAnimationState() {return AnimationState;}
+	void SetAnimationState(const EAnimationState& NextState);
+
+	UFUNCTION(BlueprintCallable)
+	void StartComboSequence();
+
+	UFUNCTION(BlueprintCallable)
+	bool TryComboAttack();
+
+	UFUNCTION()
+	void SetHasHit(const bool Success) {bHasHit = Success;}
+
+	UFUNCTION(BlueprintCallable)
+	void StartComboWindowTimer();
+
+	UFUNCTION(BlueprintCallable)
+	void StopComboWindowTimer();
+
+	UFUNCTION()
+	void OnHitComboTimerTimeOut();
+
+	UFUNCTION()
+	void OnCooldownTimerTimeOut();
+	
+	void OnAnimNotifyComboHasEnded(bool bIsActive, const UPaperZDAnimSequence* PaperZdAnimSequence);
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void ChangeAnimation(const EAnimationState& AnimationState);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		int AttackCounter {};
+	UFUNCTION(BlueprintCallable)
+	bool CanAttack();
 };

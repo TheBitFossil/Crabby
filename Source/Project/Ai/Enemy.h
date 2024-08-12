@@ -93,7 +93,7 @@ private:
 	void JumpWithImpulse();
 	
 	UFUNCTION()
-	void OnJumpCoolDownTimerTimeout();
+	void OnJumpCoolDownTimerTimeOut();
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
