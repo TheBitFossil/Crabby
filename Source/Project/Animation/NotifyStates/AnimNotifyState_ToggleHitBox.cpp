@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AnimNotifyPlayerAttack.h"
+#include "AnimNotifyState_ToggleHitBox.h"
 
 #include "PaperZDAnimInstance.h"
 #include "Project/Player/PlayerCharacter2D.h"
@@ -19,15 +19,12 @@ void UAnimNotifyPlayerAttack::OnNotifyBegin_Implementation(UPaperZDAnimInstance*
 {
 	Super::OnNotifyBegin_Implementation(OwningInstance);
 
-	if(!OwningInstance)
+	if(!OwningInstance || !Player2D)
 	{
 		return;
 	}
 		
-	if (APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
-	{
-		OwningActor->ToggleAttackCollisionBox(true);
-	}
+	Player2D->ToggleAttackCollisionBox(true);
 }
 
 //---------------------------------
@@ -35,15 +32,11 @@ void UAnimNotifyPlayerAttack::OnNotifyBegin_Implementation(UPaperZDAnimInstance*
 void UAnimNotifyPlayerAttack::OnNotifyEnd_Implementation(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyEnd_Implementation(OwningInstance);
-	if(!OwningInstance)
+	if(!OwningInstance || !Player2D)
 	{
 		return;
 	}
-	
-	if (APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
-	{
-		OwningActor->ToggleAttackCollisionBox(false);
-	}
+	Player2D->ToggleAttackCollisionBox(false);
 }
 
 //---------------------------------
@@ -58,13 +51,12 @@ void UAnimNotifyPlayerAttack::OnNotifyAborted(UPaperZDAnimInstance* OwningInstan
 		return;
 	}
 
-	APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor());
-	if(!OwningActor)
+	if(!Player2D)
 	{
 		UE_LOG(LogTemp, Error,
-			TEXT("Failed to cast OwningInstance->GetOwningActor() to APlayerCharacter2D in OnNotifyAborted."));
+			TEXT("Failed to retrieve Player2D from BaseNotifyState in OnNotifyAborted."));
 		return;
 	}
 
-	OwningActor->ToggleAttackCollisionBox(false);
+	Player2D->ToggleAttackCollisionBox(false);
 }
