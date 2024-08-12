@@ -85,7 +85,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float JumpTimer{5.f};
-
+	
 	void MoveHorizontalTo(const APlayerCharacter2D* Target);
 
 	void UpdateDirection(const APlayerCharacter2D* Target);
@@ -128,6 +128,9 @@ private:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Status)
 		bool bIsAlive{true};
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Debug")
+		bool bIsHostile{true};
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 };

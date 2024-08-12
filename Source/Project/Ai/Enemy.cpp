@@ -53,7 +53,10 @@ void AEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	{
 		return;
 	}
-	
+	if(!bIsHostile)
+	{
+		return;
+	}
 	if(APlayerCharacter2D* Player = Cast<APlayerCharacter2D>(OtherActor))
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, .2f, FColor::White, TEXT("overlapping other: %s"), *Player->GetName());
