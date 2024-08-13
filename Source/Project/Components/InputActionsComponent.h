@@ -15,7 +15,7 @@ USTRUCT(BlueprintType)
 struct FInputConfig
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputAction> IA_Move;
 
@@ -64,6 +64,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
 	FInputConfig InputConfig;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+	TObjectPtr<UInputMappingContext> IMC_Default;
+	
 	void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent);
 
 protected:

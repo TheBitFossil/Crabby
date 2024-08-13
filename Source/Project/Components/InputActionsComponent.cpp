@@ -76,6 +76,11 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 		EnhancedInputComponent->BindAction(InputConfig.IA_Punch, ETriggerEvent::Triggered, this, &UInputActionsComponent::Punch);
 	}
 
+	if (InputConfig.IA_Weapon)
+	{
+		EnhancedInputComponent->BindAction(InputConfig.IA_Weapon, ETriggerEvent::Triggered, this, &UInputActionsComponent::Weapon);
+	}
+	
 	if (InputConfig.IA_Grab)
 	{
 		EnhancedInputComponent->BindAction(InputConfig.IA_Grab, ETriggerEvent::Triggered, this, &UInputActionsComponent::Grab);
