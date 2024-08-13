@@ -34,7 +34,7 @@ struct FAnimationData
 	int AnimationDamage{0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
-	EAnimationDataType AnimationType;
+	EAnimationDataType AnimationType{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation")
 	TArray<TSoftObjectPtr<UPaperZDAnimSequence>> AnimationSequences;

@@ -46,7 +46,7 @@ void APlayerCharacter2D::BeginPlay()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
 				ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
-			Subsystem->AddMappingContext(IMC_Default, 0);
+			Subsystem->AddMappingContext(InputActionsComponent->IMC_Default, 0);
 		}
 	}
 
@@ -57,6 +57,7 @@ void APlayerCharacter2D::BeginPlay()
 	{
 		CMC = GetCharacterMovement();
 		CMC->GravityScale = CustomGravityScale;
+		CMC->MaxWalkSpeed = WalkSpeed;
 	}
 
 	// Init PlayerData
@@ -71,7 +72,7 @@ void APlayerCharacter2D::BeginPlay()
 
 void APlayerCharacter2D::SetDirectionFacing(const float ActionValue)
 {
-	if(!Controller || MovementState == EMoveState::MOVE_Wall)
+	if(!Controller || MovementState == EMoveState::Wall)
 	{
 		return;
 	}
@@ -125,16 +126,34 @@ void APlayerCharacter2D::Run(const FInputActionValue& InputActionValue)
 		return;
 	}
 	
-	if(AnimationComboComponent->GetAnimationState() == Running)
+	if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Running)
 	{
-		AnimationComboComponent->SetAnimationState(Walking);
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
 		CMC->MaxWalkSpeed = WalkSpeed;
 	}
-	else if(AnimationComboComponent->GetAnimationState() == Walking)
+	else if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Walking)
 	{
-		AnimationComboComponent->SetAnimationState(Running);
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Running);
 		CMC->MaxWalkSpeed = RunSpeed;
 	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::RemoveStamina(const float StaminaCost)
+{
+	// Update Instant Stamina Bar
+	GameInstance->RemoveStamina(StaminaCost);
+
+	// Start Delayed Stamina Tick
+	GetWorldTimerManager().SetTimer(
+		StaminaTickDelegate,
+		this,
+		&APlayerCharacter2D::OnStaminaTickTimeOut,
+		1.f,
+		false,
+		StaminaTickRate
+	);
 }
 
 //---------------------------------
@@ -154,7 +173,7 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	
 	if(GameInstance->GetStamina() > StaminaCostDash)
 	{
-		AnimationComboComponent->SetAnimationState(Dashing);
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Dashing);
 		
 		const FVector DashDirection = GetActorForwardVector();
 		const float AirDashForce = DashForce / 2.f;
@@ -168,18 +187,7 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 			LaunchCharacter(DashDirection * AirDashForce / 10.f, false, false);
 		}
 				
-		// Update Instant Stamina Bar
-		GameInstance->RemoveStamina(StaminaCostDash);
-
-		// Start Delayed Stamina Tick
-		GetWorldTimerManager().SetTimer(
-			StaminaTickDelegate,
-			this,
-			&APlayerCharacter2D::OnStaminaTickTimeOut,
-			1.f,
-			false,
-			StaminaTickRate
-		);
+		RemoveStamina(StaminaCostDash);
 
 		// Set the Bar to Zero immediately after Dashing
 		GameInstance->ResetDashBar();
@@ -209,13 +217,13 @@ void APlayerCharacter2D::StartJump(const FInputActionValue& InputActionValue)
 
 	switch (MovementState)
 	{
-	case EMoveState::MOVE_Ground:
+	case EMoveState::Ground:
 		Jump();
 		break;
-	case EMoveState::MOVE_Air:
+	case EMoveState::Air:
 		// DoubleJump()
 		break;
-	case EMoveState::MOVE_Wall:
+	case EMoveState::Wall:
 		WallJump();
 		break;
 	}
@@ -232,15 +240,15 @@ void APlayerCharacter2D::StopJump(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::Crouching(const FInputActionValue& InputActionValue)
 {
-	if(AnimationComboComponent->GetAnimationState() == Crouched)
+	if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Crouched)
 	{
 		UnCrouch();
-		AnimationComboComponent->SetAnimationState(Walking);
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
 	}
-	else if(AnimationComboComponent->GetAnimationState() == Walking)
+	else if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Walking)
 	{
 		Crouch();
-		AnimationComboComponent->SetAnimationState(Crouched);
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Crouched);
 	}
 }
 
@@ -248,7 +256,12 @@ void APlayerCharacter2D::Crouching(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::Weapon(const FInputActionValue& InputActionValue)
 {
-	AnimationComboComponent->AttackCombo(EAnimationState::Sword);
+	if(!bIsAlive || bIsStunned || !AnimationComboComponent->CanAttack())
+	{
+		return;
+	}
+	
+	AnimationComboComponent->RequestAttackCombo(EComboType::Sword);
 }
 
 //---------------------------------
@@ -259,15 +272,20 @@ void APlayerCharacter2D::Punch(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
-
-	AnimationComboComponent->AttackCombo(EAnimationState::Melee);
+	
+	AnimationComboComponent->RequestAttackCombo(EComboType::Punch);
 }
 
 //---------------------------------
 
 void APlayerCharacter2D::Kick(const FInputActionValue& InputActionValue)
 {
-	AnimationComboComponent->AttackCombo(EAnimationState::Kick);
+	if(!bIsAlive || bIsStunned || !AnimationComboComponent->CanAttack())
+	{
+		return;
+	}
+	
+	AnimationComboComponent->RequestAttackCombo(EComboType::Kick);
 }
 
 //---------------------------------
@@ -288,9 +306,7 @@ void APlayerCharacter2D::Grab(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter2D::EquipBow(const FInputActionValue& InputActionValue)
 {
-	
-		GetAnimInstance()->JumpToNode(FName("JumpBow"));
-	
+	GetAnimInstance()->JumpToNode(FName("JumpBow"));
 }
 
 //---------------------------------
@@ -375,9 +391,9 @@ void APlayerCharacter2D::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	if(MovementState != EMoveState::MOVE_Ground)
+	if(MovementState != EMoveState::Ground)
 	{
-		MovementState = EMoveState::MOVE_Ground;
+		MovementState = EMoveState::Ground;
 		UE_LOG(LogTemp, Warning, TEXT("Landed->"));
 	}
 }
@@ -386,7 +402,7 @@ void APlayerCharacter2D::Landed(const FHitResult& Hit)
 
 void APlayerCharacter2D::WallJump()
 {
-	if(MovementState != EMoveState::MOVE_Wall || !CMC)
+	if(MovementState != EMoveState::Wall || !CMC)
 	{
 		return;
 	}
@@ -448,7 +464,7 @@ void APlayerCharacter2D::OnJumped_Implementation()
 
 void APlayerCharacter2D::OnWallJumpTimerTimeOut()
 {
-	MovementState = EMoveState::MOVE_Air;
+	MovementState = EMoveState::Air;
 	ToggleGravity(true);
 }
 
@@ -542,24 +558,21 @@ void APlayerCharacter2D::OnHealthTickTimeOut()
 
 //---------------------------------
 
-void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* CharacterMovement)
+void APlayerCharacter2D::WallMovement(UCharacterMovementComponent* CharacterMovement)
 {
-	if(MovementState == EMoveState::MOVE_Air && AnimationComboComponent->GetAnimationState() != Dashing)
+	/* If in range of a WorldStatic and we press forward direction. Change State*/
+	if(WallDetectorFront->HasDetectedActor())
 	{
-		ToggleGravity(true);
+		// Are we pressing in forward direction , which means we are clinging to the wall
+		const float& DistanceToWall = WallDetectorFront->DetectedWallDistance;
+		const bool bHorizontalMovement = (CharacterMovement->GetLastInputVector().X > 0.f || CharacterMovement->GetLastInputVector().X < 0.f);
 		
-		/* If in range of a WorldStatic and we press forward direction. Change State*/
-		if(WallDetectorFront->IsDetectingWall(this))
+		if (DistanceToWall < WallHangDistance && bHorizontalMovement)
 		{
-			// Are we pressing in forward direction , which means we are clinging to the wall
-			const float& DistanceToWall = WallDetectorFront->DetectedWallDistance;
-			if (DistanceToWall < WallHangDistance && (CharacterMovement->GetLastInputVector().X > 0.f || CharacterMovement->GetLastInputVector().X < 0.f))
-			{
-				MovementState = EMoveState::MOVE_Wall;
-				
-				// Stop Player from traversing in last (Z) Direction
-				CharacterMovement->Velocity = FVector::Zero();
-			}
+			MovementState = EMoveState::Wall;
+			
+			// Stop Player from traversing in last (Z) Direction
+			CharacterMovement->Velocity = FVector::Zero();
 		}
 	}
 }
@@ -569,19 +582,25 @@ void APlayerCharacter2D::HandleAirMovement(UCharacterMovementComponent* Characte
 void APlayerCharacter2D::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	
 	if(CMC)
 	{
 		if (CMC->IsMovingOnGround())
 		{
-			MovementState = EMoveState::MOVE_Ground;
+			MovementState = EMoveState::Ground;
 		}
-		else if(!CMC->IsMovingOnGround() && CMC->GetLastUpdateVelocity().Z < 0.f)		// Grab Wall only when falling
+		else 
 		{
-			MovementState = EMoveState::MOVE_Air;
+			MovementState = EMoveState::Air;
+			ToggleGravity(true);
+			
+			// During Vertical Movement check for Walls, Could also only apply when moving Downward
+			if(CMC->GetLastUpdateVelocity().Z != 0.f)
+			{
+				WallDetectorFront->SetWallDetectorActive(true);
+				WallMovement(CMC);
+			}
 		}
-
-		HandleAirMovement(CMC);
 	}
 }
 
@@ -605,16 +624,24 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 			PointDamageEvent.HitInfo = HitResult;
 			PointDamageEvent.ShotDirection = GetActorForwardVector();
 			PointDamageEvent.DamageTypeClass = nullptr;
-			
-			Enemy->TakeDamage(
-				10.f,
-				PointDamageEvent,
-				GetController(),
-				this
-			);
-			//TODO:: Make IDamageable
+
+			//TODO:: Make IDamageable, we need to Hit first and then 
 			// We have Hit a viable Target Start ComboWindow
 			AnimationComboComponent->SetHasHit(true);
+			
+			// TODO:: follow up with get damage from a component(Combo or similar),
+			// when we unpack our animation data.
+			// Think about timing and processing speed
+			// TODO:: Then deal damage, after we know what type of anim we played
+			if(const float Dmg = AnimationComboComponent->CalculateAttackDamage())
+			{
+				Enemy->TakeDamage(
+					Dmg,
+					PointDamageEvent,
+					GetController(),
+					this
+				);
+			}
 		}
 	}
 }
@@ -692,7 +719,7 @@ void APlayerCharacter2D::HealthDepleted()
 void APlayerCharacter2D::OnAnimNotifyDashEnded()
 {
 	// Callback from UAnimNotifyState_Dashing::OnNotifyEnd
-	AnimationComboComponent->SetAnimationState(Walking);
+	AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
 }
 
 //---------------------------------

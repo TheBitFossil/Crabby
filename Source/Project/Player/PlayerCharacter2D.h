@@ -28,11 +28,10 @@ class UPlayerHUD;
 UENUM(BlueprintType)
 enum class EMoveState : uint8
 {
-	MOVE_Ground,
-	MOVE_Air,
-	MOVE_Wall
+	Ground	UMETA(DisplayName="OnGround"),
+	Air		UMETA(DisplayName="InAir"),
+	Wall	UMETA(DisplayName="OnWall")
 };
-
 
 
 UCLASS()
@@ -49,9 +48,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TObjectPtr<USpringArmComponent> SpringArmComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
-		TObjectPtr<UInputMappingContext> IMC_Default;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Attack)
 		TObjectPtr<UPaperZDAnimSequence> AttackAnimationSequence;
@@ -86,7 +82,7 @@ protected:
 		float RunSpeed{400.f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
-		int32 DamageTaken {};
+		int32 DamageTaken{0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Attack")
 		float AttackDmg{10.f};
@@ -118,7 +114,7 @@ protected:
 	// Amount added per Tick 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
-		float CurrentDashTimer{};
+		float CurrentDashTimer{0.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		int32 StaminaRegenAmount{10};
@@ -145,7 +141,7 @@ protected:
 		float WallJumpGravityScale {.35f};
 
 	UPROPERTY(VisibleAnywhere, Category="Gameplay|Movement")
-		FVector LastJumpLocation{};
+		FVector LastJumpLocation{FVector::Zero()};
 
 	FTimerHandle DashTimerDelegate;
 	FTimerHandle StunTimerDelegate;
@@ -156,10 +152,10 @@ protected:
 	FTimerHandle StaminaTickDelegate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
-		EMoveState MovementState;
+		EMoveState MovementState = EMoveState::Ground;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gameplay|Core")
-		TObjectPtr<UPlatformerGameInstance> GameInstance;
+		TObjectPtr<UPlatformerGameInstance> GameInstance {};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Inventory)
 		bool bEquippedSlot01 {false};
@@ -262,8 +258,10 @@ public:
 	void EquipBow(const FInputActionValue& InputActionValue);
 	void Aim(const FInputActionValue& InputActionValue);
 	void SetDirectionFacing(const float ActionValue);
-
+	void RemoveStamina(const float StaminaCost);
+	
 private:
-	void HandleAirMovement(UCharacterMovementComponent* CharacterMovement);
+	void WallMovement(UCharacterMovementComponent* CharacterMovement);
 	void ToggleGravity(const bool Enabled) const;
+	
 }; 

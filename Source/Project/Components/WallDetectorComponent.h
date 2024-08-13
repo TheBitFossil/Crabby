@@ -17,6 +17,20 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bIsProcessing{false};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TObjectPtr<AActor> WallActor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bHasDetectedActor{false};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float OffsetDistance {20.f};
+
+	void DetectWall();
+	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -28,6 +42,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float DetectedWallDistance{};
+
+	void SetWallDetectorActive(const bool bIsActive);
+
+	bool HasDetectedActor() const {return bHasDetectedActor;}
 	
-	bool IsDetectingWall(const AActor* IgnoredActor = nullptr);
+	AActor* GetDetectedActor() const {return WallActor;}
 };

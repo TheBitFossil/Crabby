@@ -3,6 +3,7 @@
 
 #include "InputActionsComponent.h"
 
+#include "AnimationComboComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Project/Player/PlayerCharacter2D.h"
 
@@ -57,12 +58,6 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 	if (InputConfig.IA_Crouch)
 	{
 		EnhancedInputComponent->BindAction(InputConfig.IA_Crouch, ETriggerEvent::Triggered, this, &UInputActionsComponent::Crouch);
-		EnhancedInputComponent->BindAction(InputConfig.IA_Crouch, ETriggerEvent::Canceled, this, &UInputActionsComponent::Crouch);
-	}
-	
-	if (InputConfig.IA_Kick)
-	{
-		EnhancedInputComponent->BindAction(InputConfig.IA_Kick, ETriggerEvent::Triggered, this, &UInputActionsComponent::Kick);
 	}
 
 	if (InputConfig.IA_Block)
@@ -71,14 +66,22 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 		EnhancedInputComponent->BindAction(InputConfig.IA_Block, ETriggerEvent::Canceled, this, &UInputActionsComponent::Block);
 	}
 	
+	if (InputConfig.IA_Kick)
+	{
+		EnhancedInputComponent->BindAction(InputConfig.IA_Kick, ETriggerEvent::Started, this, &UInputActionsComponent::Kick);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Kick, ETriggerEvent::Completed, this, &UInputActionsComponent::OnComboInputReleased);
+	}
+
 	if (InputConfig.IA_Punch)
 	{
-		EnhancedInputComponent->BindAction(InputConfig.IA_Punch, ETriggerEvent::Triggered, this, &UInputActionsComponent::Punch);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Punch, ETriggerEvent::Started, this, &UInputActionsComponent::Punch);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Punch, ETriggerEvent::Completed, this, &UInputActionsComponent::OnComboInputReleased);
 	}
 
 	if (InputConfig.IA_Weapon)
 	{
-		EnhancedInputComponent->BindAction(InputConfig.IA_Weapon, ETriggerEvent::Triggered, this, &UInputActionsComponent::Weapon);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Weapon, ETriggerEvent::Started, this, &UInputActionsComponent::Weapon);
+		EnhancedInputComponent->BindAction(InputConfig.IA_Weapon, ETriggerEvent::Completed, this, &UInputActionsComponent::OnComboInputReleased);
 	}
 	
 	if (InputConfig.IA_Grab)
@@ -238,6 +241,17 @@ void UInputActionsComponent::Aim(const FInputActionValue& InputActionValue)
 	{
 		PlayerCharacter2D->Aim(InputActionValue);
 	}
+}
+
+//---------------------------------
+
+void UInputActionsComponent::OnComboInputReleased(const FInputActionValue& InputActionValue)
+{
+	// Make sure that we are in the "Idle/Walking" State everytime we release a combo input
+	PlayerCharacter2D->GetComboComponent()->SetAnimationState(ECurrentAnimStates::Walking);
+	
+	UE_LOG(LogTemp, Error, TEXT("OnComboInputReleased->Setting Animation State to Walking."),
+		*UEnum::GetValueAsString(PlayerCharacter2D->GetComboComponent()->GetAnimationState()));
 }
 
 //---------------------------------

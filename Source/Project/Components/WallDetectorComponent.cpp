@@ -23,45 +23,59 @@ void UWallDetectorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if(!bIsProcessing || !GetOwner())
+	{
+		return;
+	}
+
+	DetectWall();
 }
 
 //---------------------------------
 
-bool UWallDetectorComponent::IsDetectingWall(const AActor* IgnoredActor)
+void UWallDetectorComponent::SetWallDetectorActive(const bool bIsActive)
+{
+	bIsProcessing = bIsActive;
+}
+
+//---------------------------------
+
+void UWallDetectorComponent::DetectWall()
 {
 	DetectedWallDistance = MAX_FLT;
 	
-	const FVector StartLocation = GetOwner()->GetActorLocation();
+	const FVector OffsetForward = GetOwner()->GetActorForwardVector() * OffsetDistance;
+	const FVector StartLocation = GetOwner()->GetActorLocation() + OffsetForward;
 	const FVector End = StartLocation + GetOwner()->GetActorForwardVector() * TraceDistance;
+	DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
+	
 	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetOwner());      
 	
-	if(IgnoredActor)
-	{
-		QueryParams.AddIgnoredActor(IgnoredActor);      
-	}
-	
-	bool bHit = GetWorld()->LineTraceMultiByChannel(HitResults, StartLocation, End,ECC_WorldStatic, QueryParams);
+	bool bHit = GetWorld()->LineTraceMultiByChannel(HitResults, StartLocation, End, ECC_WorldStatic, QueryParams);
 	if(bHit)
 	{
 		for (const FHitResult& Hit : HitResults)
 		{
-			//DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
-			//	FColor::Red, false, 1.f);
+			DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
+				FColor::Red, false, 1.f);
 
 			if(Hit.GetComponent()->GetCollisionObjectType() == ECC_WorldStatic)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,
-				//						Hit.Component->GetName());
-
+				GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange, Hit.Component->GetName());
+				WallActor = Hit.GetActor();
+				
 				const float Distance = FVector::Dist(GetOwner()->GetActorLocation(), Hit.ImpactPoint);
-				//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,FString::Printf(TEXT("Distance: %f"), Distance));
+				GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Orange,FString::Printf(TEXT("Distance: %f"), Distance));
 
 				DetectedWallDistance = Distance;
-				return true;
+				
+				bHasDetectedActor = true;
 			}
 		}
 	}
 
-	//DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
-	return false;
+	WallActor = nullptr;
+	bHasDetectedActor = false;
 }

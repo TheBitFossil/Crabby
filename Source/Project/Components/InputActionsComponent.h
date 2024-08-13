@@ -89,6 +89,7 @@ protected:
 	void Grab(const FInputActionValue& InputActionValue);
 	void EquipBow(const FInputActionValue& InputActionValue);
 	void Aim(const FInputActionValue& InputActionValue);
+	void OnComboInputReleased(const FInputActionValue& InputActionValue);
 	
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
