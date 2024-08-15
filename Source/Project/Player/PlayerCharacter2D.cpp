@@ -95,14 +95,13 @@ void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 
 	const float ActionValue = InputActionValue.Get<float>();
 		
-	if(bIsAlive && AnimationComboComponent->GetAnimationState() != ECurrentAnimStates::Attacking)
+	if(bIsAlive)
 	{
 		const FVector Direction = FVector(1.f, 0.f, 0.f); 
 		AddMovementInput(Direction, ActionValue);
 		SetDirectionFacing(ActionValue);
 	}
 }
-
 
 //---------------------------------
 
@@ -125,16 +124,16 @@ void APlayerCharacter2D::Run(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
-	
-	if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Running)
+
+	if(CMC->MaxWalkSpeed == WalkSpeed)
 	{
-		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
-		CMC->MaxWalkSpeed = WalkSpeed;
-	}
-	else if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Walking)
-	{
-		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Running);
 		CMC->MaxWalkSpeed = RunSpeed;
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Running);
+	}
+	else if(CMC->MaxWalkSpeed == RunSpeed)
+	{
+		CMC->MaxWalkSpeed = WalkSpeed;
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
 	}
 }
 

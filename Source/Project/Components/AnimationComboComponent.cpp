@@ -310,12 +310,8 @@ void UAnimationComboComponent::ResetComboSequence(const UPaperZDAnimSequence* Fr
 	if(LastComboInputType != EComboType::None)
 	{
 		LastComboInputType = EComboType::None;
-		UE_LOG(LogTemp, Warning, TEXT("ResetComboSequence->NO Combat Input(%s)"), *UEnum::GetValueAsString(LastComboInputType));
-	}
-
-	if(AnimationState != ECurrentAnimStates::Walking)
-	{
 		SetAnimationState(ECurrentAnimStates::Walking);
+		UE_LOG(LogTemp, Warning, TEXT("ResetComboSequence->NO Combat Input(%s)"), *UEnum::GetValueAsString(LastComboInputType));
 	}
 	
 	if(ToAnimSequence)

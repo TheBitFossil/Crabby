@@ -41,7 +41,7 @@ void UInputActionsComponent::BindInputActions(UEnhancedInputComponent* EnhancedI
 	if (InputConfig.IA_Run)
 	{
 		EnhancedInputComponent->BindAction(InputConfig.IA_Run, ETriggerEvent::Triggered, this, &UInputActionsComponent::Run);
-		EnhancedInputComponent->BindAction(InputConfig.IA_Run, ETriggerEvent::Canceled, this, &UInputActionsComponent::Run);
+		//EnhancedInputComponent->BindAction(InputConfig.IA_Run, ETriggerEvent::Canceled, this, &UInputActionsComponent::Run);
 	}
 
 	if (InputConfig.IA_Dash)
