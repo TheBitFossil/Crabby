@@ -95,7 +95,7 @@ void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 
 	const float ActionValue = InputActionValue.Get<float>();
 		
-	if(bIsAlive && bIsMovementAllowed)
+	if(bIsAlive && AnimationComboComponent->GetAnimationState() != ECurrentAnimStates::Attacking)
 	{
 		const FVector Direction = FVector(1.f, 0.f, 0.f); 
 		AddMovementInput(Direction, ActionValue);
@@ -173,7 +173,7 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	
 	if(GameInstance->GetStamina() > StaminaCostDash)
 	{
-		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Dashing);
+		 
 		
 		const FVector DashDirection = GetActorForwardVector();
 		const float AirDashForce = DashForce / 2.f;
@@ -431,7 +431,6 @@ void APlayerCharacter2D::OnAttackOverrideEndSequence(bool Completed)
 		return;
 	}
 
-	OnIsAttackAllowed(true);
 	OnIsMovementAllowed(true);
 }
 
@@ -627,25 +626,20 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 
 			//TODO:: Make IDamageable, we need to Hit first and then 
 			// We have Hit a viable Target Start ComboWindow
+			// The AnimComboComp, calculates the damage, when we have enough stamina do attack
 			AnimationComboComponent->SetHasHit(true);
 			
-			// TODO:: follow up with get damage from a component(Combo or similar),
-			// when we unpack our animation data.
-			// Think about timing and processing speed
-			// TODO:: Then deal damage, after we know what type of anim we played
-			if(const float Dmg = AnimationComboComponent->CalculateAttackDamage())
-			{
-				Enemy->TakeDamage(
-					Dmg,
-					PointDamageEvent,
-					GetController(),
-					this
-				);
-			}
+			float Dmg = AnimationComboComponent->GetAttackDamage();
+			UE_LOG(LogTemp, Warning, TEXT("Attack damage->%f"), Dmg);
+			Enemy->TakeDamage(
+				Dmg,
+				PointDamageEvent,
+				GetController(),
+				this
+			);
 		}
 	}
 }
-
 
 //---------------------------------
 
@@ -705,7 +699,6 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 void APlayerCharacter2D::HealthDepleted()
 {
 	bIsAlive = false;
-	OnIsAttackAllowed(false);
 	OnIsMovementAllowed(false);
 	
 	GetAnimInstance()->JumpToNode(FName("JumpRemoval"));
@@ -722,16 +715,11 @@ void APlayerCharacter2D::OnAnimNotifyDashEnded()
 	AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
 }
 
+
 //---------------------------------
-/* Is called within this and from Animation Notifies */
+// Is called within this and from Animation Notifies 
 void APlayerCharacter2D::OnIsMovementAllowed(const bool bIsActive)
 {
+	// Final Result Not used in any path
 	bIsMovementAllowed = bIsActive;
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnIsAttackAllowed(const bool bIsActive)
-{
-	bCanAttack = bIsActive;
 }

@@ -109,6 +109,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
 		TObjectPtr<UAnimationDataAsset> ComboDataAssetKey;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		float AttackDamageCurrentHit{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		float AttackCostCurrentHit{};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
+		float Time{};
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -121,6 +130,9 @@ protected:
 	UFUNCTION()
 	void OnComboAttackOverride(bool Completed);
 
+	void CalculateAttackDamage(const float InDamage);
+	void CalculateAttackCost(const float InCost);
+
 public:
 	ECurrentAnimStates GetAnimationState() const {return AnimationState;}
 	void SetAnimationState(const ECurrentAnimStates NextState);
@@ -131,8 +143,6 @@ public:
 
 	/* Called only from the Player when he has Hit a target. */
 	void StartTimer(FTimerHandle& TimerHandle, void (UAnimationComboComponent::*TimerCallBack)(), float TimerDuration);
-
-	void StopTimer(FTimerHandle& TimerHandle);
 
 	/* Called only from the ABP via AnimNotify */
 	UFUNCTION(BlueprintCallable)
@@ -155,8 +165,7 @@ public:
 	/* Internal check if we can Attack. Can block further Player Input */
 	UFUNCTION(BlueprintCallable)
 	bool CanAttack();
-	
-	float CalculateAttackDamage();
-	
-	float CalculateAttackCost();
+
+	UFUNCTION(BlueprintCallable)
+	float GetAttackDamage();
 };

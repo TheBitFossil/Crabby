@@ -38,16 +38,13 @@ void UAnimationComboComponent::BeginPlay()
 	OnComboAttackOverrideDelegate.BindUObject(this, &UAnimationComboComponent::OnComboAttackOverride);
 }
 
-
-
 //---------------------------------
 
 void UAnimationComboComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                              FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	
 }
 
 //---------------------------------
@@ -77,18 +74,28 @@ bool UAnimationComboComponent::CanAttack()
 
 //---------------------------------
 
-float UAnimationComboComponent::CalculateAttackDamage()
+void UAnimationComboComponent::CalculateAttackDamage(const float InDamage)
 {
-	return ComboDataAssetKey->Data.AnimationDamage;
+	AttackDamageCurrentHit = InDamage;
 }
 
 //---------------------------------
 
 
-float UAnimationComboComponent::CalculateAttackCost()
+void UAnimationComboComponent::CalculateAttackCost(const float InCost)
 {
-	return ComboDataAssetKey->Data.AnimationCost;
+	AttackCostCurrentHit = InCost;
 }
+
+//---------------------------------
+
+float UAnimationComboComponent::GetAttackDamage()
+{
+	return AttackDamageCurrentHit;
+}
+
+//---------------------------------
+
 //---------------------------------
 
 void UAnimationComboComponent::SetHasHit(const bool Success)
@@ -100,6 +107,7 @@ void UAnimationComboComponent::SetHasHit(const bool Success)
 		HitCounter += 1;
 		if(HitComboWindowTime > 0.f)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("SetHasHit"));
 			StartTimer(HitComboTimerHandle, &UAnimationComboComponent::OnHitComboTimerTimeOut, HitComboWindowTime);
 		}
 	}
@@ -109,8 +117,11 @@ void UAnimationComboComponent::SetHasHit(const bool Success)
 
 void UAnimationComboComponent::SetAnimationState(const ECurrentAnimStates NextState)
 {
-	AnimationState = NextState;
-	UE_LOG(LogTemp, Warning, TEXT("StateChanged to->%s"), *UEnum::GetValueAsString(AnimationState));
+	if(AnimationState != NextState)
+	{
+		AnimationState = NextState;
+		UE_LOG(LogTemp, Warning, TEXT("SetAnimationState To->(%s)"), *UEnum::GetValueAsString(AnimationState));
+	}
 }
 
 //---------------------------------
@@ -126,6 +137,9 @@ void UAnimationComboComponent::RequestAttackCombo(const EComboType& InputAttackT
 			if(GameInstance->GetStamina() > StaminaCosts)
 			{
 				PlayerCharacter2D->RemoveStamina(StaminaCosts);
+				CalculateAttackDamage(ComboDataAssetKey->Data.AnimationDamage);
+				CalculateAttackCost(ComboDataAssetKey->Data.AnimationCost);
+						
 				StartAttackCombo(InputAttackType);
 			}
 			else
@@ -178,10 +192,6 @@ void UAnimationComboComponent::StartAttackCombo(const EComboType& InputAttackTyp
 		OnAnimNotifyComboHasEnded(true, AnimInstance->GetPlayer()->GetCurrentAnimSequence());
 	}
 	
-	/* Damage for Attack
-	int Damage = ComboData->Data.AnimationDamage;
-	int Cost = ComboData->Data.AnimationCost;
-		
 	// Right now: Damage is the Damage for all attacks inside A Data Asset
 	// We can not change it for each Sequence without 
 	// TODO:: Use more data packages inside packages for each animation
@@ -192,14 +202,13 @@ void UAnimationComboComponent::StartAttackCombo(const EComboType& InputAttackTyp
 	// less micro managing
 	// TODO:: We can set our Combo Counter, and Hit Counter, this will change the ABP
 	// TODO:: The ABP is prefilled with our possible Combos
-	*/
 }
 
 //---------------------------------
 
 void UAnimationComboComponent::StartTimer(FTimerHandle& TimerHandle, void(UAnimationComboComponent::*TimerCallBack)(), float TimerDuration)
 {
-	if(GetWorld())
+	if (GetWorld())
 	{
 		GetWorld()->GetTimerManager().SetTimer(
 			TimerHandle,
@@ -213,16 +222,6 @@ void UAnimationComboComponent::StartTimer(FTimerHandle& TimerHandle, void(UAnima
 		UE_LOG(LogTemp, Warning, TEXT("GetWorld() returned nullptr."));
 	}
 }
-
-//---------------------------------
-
-void UAnimationComboComponent::StopTimer(FTimerHandle& TimerHandle)
-{
-	SetAnimationState(ECurrentAnimStates::Walking);
-	
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-}
-
 //---------------------------------
 
 void UAnimationComboComponent::OnHitComboTimerTimeOut()
@@ -230,22 +229,52 @@ void UAnimationComboComponent::OnHitComboTimerTimeOut()
 	SetHasHit(false);
 	
 	SetAnimationState(ECurrentAnimStates::Walking);
+
+	HitCounter = 0.f;
 }
 
 //---------------------------------
 
 void UAnimationComboComponent::OnAnimNotifyComboHasEnded(bool bHasEnded, const UPaperZDAnimSequence* LastSequencePlayed)
 {
-	if(bHasEnded)
+	if (bHasEnded)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded -> (HasEnded: %s), Sequence: %s"), 
-			   bHasEnded ? TEXT("True") : TEXT("False"), 
-			   *LastSequencePlayed->GetName());
+		FString SequenceName = LastSequencePlayed ? LastSequencePlayed->GetName() : TEXT("None");
+		UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded -> (HasEnded: %s), Sequence: (%s)"), 
+			   bHasEnded ? TEXT("True") : TEXT("False"), *SequenceName);
+
+		SetAnimationState(ECurrentAnimStates::Walking);
 		
-		HitCounter = 0.f;
-		if(ComboCooldownTime > 0.f)
+		if (UWorld* World = GetWorld())
 		{
-			StartTimer(ComboCooldownTimerHandle, &UAnimationComboComponent::OnCooldownTimerTimeOut, ComboCooldownTime);
+			// Check TimerManager
+			FTimerManager* TimerMgr = &World->GetTimerManager();
+			if (TimerMgr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("TimerManager is valid."));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("TimerManager is nullptr."));
+			}
+			
+			if (ComboCooldownTime > 0.f)
+			{
+				if(!ComboCooldownTimerHandle.IsValid())
+				{
+					UE_LOG(LogTemp, Warning, TEXT("ComboCooldownTimerHandle was not valid before starting the timer."));
+				}
+				StartTimer(ComboCooldownTimerHandle, &UAnimationComboComponent::OnCooldownTimerTimeOut, ComboCooldownTime);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("ComboCooldownTime->%f is not greater than 0"), ComboCooldownTime);
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("GetWorld() returned nullptr in OnAnimNotifyComboHasEnded."));
+			return; // Early exit if world context is invalid
 		}
 	}
 }

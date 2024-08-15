@@ -21,7 +21,12 @@ void UAnimNotify_ComboEnded::OnReceiveNotify_Implementation(UPaperZDAnimInstance
 		return;
 	}
 
-	ComboComponent->OnAnimNotifyComboHasEnded(true,OwningInstance->GetPlayer()->GetCurrentAnimSequence());
+	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Warning->NO Anim Sequence"));
+		return;
+	}
+	ComboComponent->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
 }
 
 //---------------------------------

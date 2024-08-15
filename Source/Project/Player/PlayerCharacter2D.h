@@ -201,8 +201,6 @@ public:
 
 	void OnIsMovementAllowed(const bool bIsActive);
 	
-	void OnIsAttackAllowed(bool bIsActive);
-
 private:
 	virtual void BeginPlay() override;
 
