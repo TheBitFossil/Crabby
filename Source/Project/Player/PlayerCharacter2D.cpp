@@ -88,7 +88,7 @@ void APlayerCharacter2D::SetDirectionFacing(const float ActionValue)
 
 void APlayerCharacter2D::Move(const FInputActionValue& InputActionValue)
 {
-	if(!Controller || bIsStunned)
+	if(!Controller || bIsStunned || !bIsMovementAllowed)
 	{
 		return;
 	}
@@ -164,34 +164,26 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 		return;
 	}
 	
-	bCanDash = false;
-	bIsImmortal = true;
-	
 	// Directly update PlayerData struct inside GameInstance 
 	GameInstance->GetLastStaminaRef() = GameInstance->GetStamina();
 	
 	if(GameInstance->GetStamina() > StaminaCostDash)
 	{
-		 
+		RemoveStamina(StaminaCostDash);
+		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Dashing);
+		
+		bCanDash = false;
+		bIsImmortal = true;
 		
 		const FVector DashDirection = GetActorForwardVector();
-		const float AirDashForce = DashForce / 2.f;
 		if(CMC->IsMovingOnGround())
 		{
-			LaunchCharacter(DashDirection * DashForce, false, false);
+			LaunchCharacter(DashDirection * DashForce, true, true);
 		}
-		else
-		{
-			// TODO:: Find a way to balance Force while in Air. Maybe Higher Gravity ? More Friction ?
-			LaunchCharacter(DashDirection * AirDashForce / 10.f, false, false);
-		}
-				
-		RemoveStamina(StaminaCostDash);
 
 		// Set the Bar to Zero immediately after Dashing
 		GameInstance->ResetDashBar();
-
-		bIsImmortal = false;
+		
 		
 		// Start update of the DashBar
 		GetWorldTimerManager().SetTimer(
@@ -335,56 +327,6 @@ void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
 }
 
 //---------------------------------
-/* A Timer that counts to a specific max value. Shows progress on the HUD between 0 and 1 */
-void APlayerCharacter2D::OnDashTimerTimeOut()
-{
-	const float& CoolDownTime = GameInstance->GetDashCoolDown();
-
-	UE_LOG(LogTemp, Log, TEXT("CurrentDashTimer: %f, CoolDownTime: %f"), CurrentDashTimer, CoolDownTime);
-	
-	CurrentDashTimer += DashCoolDownTickAmount;
-	if(CurrentDashTimer >= CoolDownTime)
-	{
-		CurrentDashTimer = 0.f;
-		GetWorldTimerManager().ClearTimer(DashTimerDelegate);
-
-		GameInstance->UpdateDashBar(GameInstance->GetDashCoolDown());
-
-		bCanDash = true;
-	}
-	else
-	{
-		GameInstance->UpdateDashBar(CurrentDashTimer);
-	}
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnStaminaRegenTimeOut()
-{
-	// ... add stamina regen when player picks up items
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnStaminaTickTimeOut()
-{
-	if (GameInstance)
-	{
-		UpdateAttributeTick(
-		GameInstance->GetLastStaminaRef(),
-		GameInstance->GetStamina(),
-		StaminaCostDash,
-		StaminaRemovePerTick,
-		StaminaTickDelegate,
-		"Stamina",
-		[this](float NewValue){GameInstance->StaminaDelayed(NewValue);},
-		StaminaTickRate
-		);
-	}
-}
-
-//---------------------------------
 
 void APlayerCharacter2D::Landed(const FHitResult& Hit)
 {
@@ -394,6 +336,11 @@ void APlayerCharacter2D::Landed(const FHitResult& Hit)
 	{
 		MovementState = EMoveState::Ground;
 		UE_LOG(LogTemp, Warning, TEXT("Landed->"));
+
+		if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Dashing && bIsImmortal)
+		{
+			bIsImmortal = false;
+		}
 	}
 }
 
@@ -410,8 +357,9 @@ void APlayerCharacter2D::WallJump()
 	const FVector JumpDirection = DirNormal * WallJumpForce;
 
 	ToggleGravity(false);
-	LaunchCharacter(JumpDirection, false, false);	// Get some distance from the Wall
-
+	
+	LaunchCharacter(JumpDirection, true, true);	// Get some distance from the Wall
+	
 	GetWorldTimerManager().SetTimer(
 		WallJumpTimerDelegate,
 		this,
@@ -419,18 +367,6 @@ void APlayerCharacter2D::WallJump()
 		WallJumpCustomGravityDuration,
 		false
 	);
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnAttackOverrideEndSequence(bool Completed)
-{
-	if(!bIsAlive || !Completed)
-	{
-		return;
-	}
-
-	OnIsMovementAllowed(true);
 }
 
 //---------------------------------
@@ -451,35 +387,11 @@ void APlayerCharacter2D::ToggleAttackCollisionBox(bool Enabled)
 
 //---------------------------------
 
-void APlayerCharacter2D::OnJumped_Implementation()
-{
-	Super::OnJumped_Implementation();
-
-	LastJumpLocation = GetActorLocation();
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnWallJumpTimerTimeOut()
-{
-	MovementState = EMoveState::Air;
-	ToggleGravity(true);
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnStunTimerTimeOut()
-{
-	bIsStunned = false;
-}
-
-//---------------------------------
-
 /**
  * Used for updating the delayed Progress Bars
  * @param Last : Pass by Ref, this Value changes each Tick.
  * @param Current: Lowest possible Value for Last.
- * @param TotalAmount: Reducing this much from Last to Current
+ * @param TotalAmount: Amount to reduce (Damage Taken)
  * @param RemovalPerTick: How much to remove each tick in fixed %
  * @param AttributeName: Identification and debugging
  * @param UpdateRefFunction: Lambda Function that will update the first Parameter ref inside GameInstance
@@ -537,30 +449,12 @@ void APlayerCharacter2D::UpdateAttributeTick(float& Last, const float& Current, 
 
 //---------------------------------
 
-void APlayerCharacter2D::OnHealthTickTimeOut()
-{
-	if(GameInstance)
-	{
-		UpdateAttributeTick(
-			GameInstance->GetLastHealthRef(),
-			GameInstance->GetHealth(),
-			GameInstance->GetDamageTaken(),
-			HealthRemovePerTick,
-			HealthTickDelegate,
-			"Health",
-			[this](float NewValue){GameInstance->HealthDelayed(NewValue);},
-			HealthTickRate
-		);
-	}
-}
-
-//---------------------------------
-
 void APlayerCharacter2D::WallMovement(UCharacterMovementComponent* CharacterMovement)
 {
 	/* If in range of a WorldStatic and we press forward direction. Change State*/
 	if(WallDetectorFront->HasDetectedActor())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("WallMovement->Has Detected"));
 		// Are we pressing in forward direction , which means we are clinging to the wall
 		const float& DistanceToWall = WallDetectorFront->DetectedWallDistance;
 		const bool bHorizontalMovement = (CharacterMovement->GetLastInputVector().X > 0.f || CharacterMovement->GetLastInputVector().X < 0.f);
@@ -593,49 +487,15 @@ void APlayerCharacter2D::Tick(float DeltaSeconds)
 			ToggleGravity(true);
 			
 			// During Vertical Movement check for Walls, Could also only apply when moving Downward
-			if(CMC->GetLastUpdateVelocity().Z != 0.f)
+			if(CMC->GetLastUpdateVelocity().Z < 0.f)
 			{
 				WallDetectorFront->SetWallDetectorActive(true);
 				WallMovement(CMC);
 			}
-		}
-	}
-}
-
-//---------------------------------
-
-void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if(OtherActor && OtherActor != this)
-	{
-		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
-		if(Enemy && Enemy->bIsAlive)
-		{
-			FRadialDamageEvent RadialDamageEvent;
-			RadialDamageEvent.Origin = Enemy->GetActorLocation();
-			RadialDamageEvent.Params = FRadialDamageParams(10, 3, 10, 3, 1.f);
-
-			FHitResult HitResult;
-			FPointDamageEvent PointDamageEvent;
-			PointDamageEvent.Damage  = 10.f;
-			PointDamageEvent.HitInfo = HitResult;
-			PointDamageEvent.ShotDirection = GetActorForwardVector();
-			PointDamageEvent.DamageTypeClass = nullptr;
-
-			//TODO:: Make IDamageable, we need to Hit first and then 
-			// We have Hit a viable Target Start ComboWindow
-			// The AnimComboComp, calculates the damage, when we have enough stamina do attack
-			AnimationComboComponent->SetHasHit(true);
-			
-			float Dmg = AnimationComboComponent->GetAttackDamage();
-			UE_LOG(LogTemp, Warning, TEXT("Attack damage->%f"), Dmg);
-			Enemy->TakeDamage(
-				Dmg,
-				PointDamageEvent,
-				GetController(),
-				this
-			);
+			else
+			{
+				WallDetectorFront->SetWallDetectorActive(false);
+			}
 		}
 	}
 }
@@ -661,6 +521,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	{
 		// Update: Instant HP Bar
 		GameInstance->RemoveHealthInstant(ActualDamage);
+		AnimationComboComponent->ResetComboCounter();
 		
 		GetAnimInstance()->JumpToNode(FName("JumpHurt"));
 
@@ -689,7 +550,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	{
 		HealthDepleted();
 	}
-		
+	
 	return ActualDamage;
 }
 
@@ -708,12 +569,157 @@ void APlayerCharacter2D::HealthDepleted()
 
 //---------------------------------
 
+void APlayerCharacter2D::OnJumped_Implementation()
+{
+	Super::OnJumped_Implementation();
+
+	LastJumpLocation = GetActorLocation();
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnWallJumpTimerTimeOut()
+{
+	MovementState = EMoveState::Air;
+	ToggleGravity(true);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnStunTimerTimeOut()
+{
+	bIsStunned = false;
+}
+
+
+//---------------------------------
+/* A Timer that counts to a specific max value. Shows progress on the HUD between 0 and 1 */
+void APlayerCharacter2D::OnDashTimerTimeOut()
+{
+	const float& CoolDownTime = GameInstance->GetDashCoolDown();
+
+	UE_LOG(LogTemp, Log, TEXT("CurrentDashTimer: %f, CoolDownTime: %f"), CurrentDashTimer, CoolDownTime);
+	
+	CurrentDashTimer += DashCoolDownTickAmount;
+	if(CurrentDashTimer >= CoolDownTime)
+	{
+		CurrentDashTimer = 0.f;
+		GetWorldTimerManager().ClearTimer(DashTimerDelegate);
+
+		GameInstance->UpdateDashBar(GameInstance->GetDashCoolDown());
+
+		bCanDash = true;
+	}
+	else
+	{
+		GameInstance->UpdateDashBar(CurrentDashTimer);
+	}
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::OnAnimNotifyDashEnded()
 {
 	// Callback from UAnimNotifyState_Dashing::OnNotifyEnd
 	AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
 }
 
+//---------------------------------
+
+void APlayerCharacter2D::OnStaminaRegenTimeOut()
+{
+	// ... add stamina regen when player picks up items
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnStaminaTickTimeOut()
+{
+	if (GameInstance)
+	{
+		UpdateAttributeTick(
+		GameInstance->GetLastStaminaRef(),
+		GameInstance->GetStamina(),
+		StaminaCostDash,
+		StaminaRemovePerTick,
+		StaminaTickDelegate,
+		"Stamina",
+		[this](float NewValue){GameInstance->StaminaDelayed(NewValue);},
+		StaminaTickRate
+		);
+	}
+}
+
+//---------------------------------
+/* Is getting called by an Animation. Only if Player was allowed to Attack. */
+void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(OtherActor && OtherActor != this)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if(Enemy && Enemy->bIsAlive)
+		{
+			FRadialDamageEvent RadialDamageEvent;
+			RadialDamageEvent.Origin = Enemy->GetActorLocation();
+			RadialDamageEvent.Params = FRadialDamageParams(10, 3, 10, 3, 1.f);
+
+			FHitResult HitResult;
+			FPointDamageEvent PointDamageEvent;
+			PointDamageEvent.Damage  = 10.f;
+			PointDamageEvent.HitInfo = HitResult;
+			PointDamageEvent.ShotDirection = GetActorForwardVector();
+			PointDamageEvent.DamageTypeClass = nullptr;
+
+			//TODO:: Make IDamageable, we need to Hit first and then 
+			// We have Hit a viable Target Start ComboWindow
+			// The AnimComboComp, calculates the damage, when we have enough stamina do attack
+			AnimationComboComponent->SetHasHit(true);
+			AnimationComboComponent->IncreaseComboCount(1);
+			
+			float Dmg = AnimationComboComponent->GetAttackDamage();
+
+			UE_LOG(LogTemp, Warning, TEXT("Attack damage->%f"), Dmg);
+			Enemy->TakeDamage(
+				Dmg,
+				PointDamageEvent,
+				GetController(),
+				this
+			);
+		}
+	}
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnAttackOverrideEndSequence(bool Completed)
+{
+	if(!bIsAlive || !Completed)
+	{
+		return;
+	}
+
+	OnIsMovementAllowed(true);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnHealthTickTimeOut()
+{
+	if(GameInstance)
+	{
+		UpdateAttributeTick(
+			GameInstance->GetLastHealthRef(),
+			GameInstance->GetHealth(),
+			GameInstance->GetDamageTaken(),
+			HealthRemovePerTick,
+			HealthTickDelegate,
+			"Health",
+			[this](float NewValue){GameInstance->HealthDelayed(NewValue);},
+			HealthTickRate
+		);
+	}
+}
 
 //---------------------------------
 // Is called within this and from Animation Notifies 

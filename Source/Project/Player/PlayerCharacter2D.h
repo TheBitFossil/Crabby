@@ -76,16 +76,13 @@ protected:
 		TObjectPtr<UCharacterMovementComponent> CMC;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
-		float WalkSpeed{200.f};
+		float WalkSpeed{225.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement")
 		float RunSpeed{400.f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|HP")
 		int32 DamageTaken{0};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Attack")
-		float AttackDmg{10.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Ui")
 		float HealthTickRate{1.f};
@@ -106,13 +103,11 @@ protected:
 		float DashForce{1000.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
-		float DashCoolDownTickRate{.2f};
-	// Visual Update Rate
-
+		float DashCoolDownTickRate{.2f};		// Visual Update Rate
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Gameplay|Ui")
-		float DashCoolDownTickAmount{0.1f};
-	// Amount added per Tick 
-
+		float DashCoolDownTickAmount{0.1f};		// Amount added per Tick 
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gameplay|Movement")
 		float CurrentDashTimer{0.f};
 
@@ -129,10 +124,10 @@ protected:
 		float WallJumpCustomGravityDuration{2.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
-		float WallJumpForce{500.f};
+		float WallJumpForce{750.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump")
-		float WallHangDistance {24.f};
+		float WallHangDistance {22.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement", meta=(ClampMin = "0.1", ClampMax = "4"))
 		float CustomGravityScale {2.f};
