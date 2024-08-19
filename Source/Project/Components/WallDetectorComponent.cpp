@@ -34,13 +34,6 @@ void UWallDetectorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 //---------------------------------
 
-void UWallDetectorComponent::SetWallDetectorActive(const bool bIsActive)
-{
-	bIsProcessing = bIsActive;
-}
-
-//---------------------------------
-
 void UWallDetectorComponent::DetectWall()
 {
 	DetectedWallDistance = MAX_FLT;
@@ -72,10 +65,12 @@ void UWallDetectorComponent::DetectWall()
 				DetectedWallDistance = Distance;
 				
 				bHasDetectedActor = true;
+				return;	// Exit the function early if a wall is detected.
 			}
 		}
 	}
 
+	// If no wall was detected, clear the WallActor and set the flag to false
 	WallActor = nullptr;
 	bHasDetectedActor = false;
 }

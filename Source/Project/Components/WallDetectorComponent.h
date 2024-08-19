@@ -43,7 +43,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float DetectedWallDistance{};
 
-	void SetWallDetectorActive(const bool bIsActive);
+	void SetWallDetectorActive(const bool Value){ bIsProcessing = Value; }
+	bool GetIsWallDetectorActive() const { return bIsProcessing; }
 
 	bool HasDetectedActor() const {return bHasDetectedActor;}
 	
