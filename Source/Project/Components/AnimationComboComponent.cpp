@@ -104,7 +104,8 @@ void UAnimationComboComponent::SetHasHit(const bool Success)
 
 	if(bHasHit)
 	{
-		HitCounter += 1;
+		IncreaseHitCounter(1);
+		IncreaseComboCount(1);
 		if(HitComboWindowTime > 0.f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SetHasHit"));
@@ -137,9 +138,12 @@ void UAnimationComboComponent::RequestAttackCombo(const EComboType& InputAttackT
 			if(GameInstance->GetStamina() > StaminaCosts)
 			{
 				PlayerCharacter2D->RemoveStamina(StaminaCosts);
+
 				CalculateAttackDamage(ComboDataAssetKey->Data.AnimationDamage);
 				CalculateAttackCost(ComboDataAssetKey->Data.AnimationCost);
-						
+
+				PlayerCharacter2D->OnIsMovementAllowed(false);								// Stop Moving during an Attack
+				
 				StartAttackCombo(InputAttackType);
 			}
 			else
@@ -160,6 +164,7 @@ void UAnimationComboComponent::StartAttackCombo(const EComboType& InputAttackTyp
 {
 	// Do we have Combo Attacks for this type ?
 	LastComboInputType = InputAttackType;
+	
 	UE_LOG(LogTemp, Warning, TEXT("AttackCombo:HitCounter->Before next Anim(%d)"), HitCounter);
 
 	// Do we have enough Sequences to choose from "3" same as Combo Count (0,1,2)
@@ -230,51 +235,36 @@ void UAnimationComboComponent::OnHitComboTimerTimeOut()
 	
 	SetAnimationState(ECurrentAnimStates::Walking);
 
-	HitCounter = 0.f;
+	ResetHitCounter();
 }
 
 //---------------------------------
 
 void UAnimationComboComponent::OnAnimNotifyComboHasEnded(bool bHasEnded, const UPaperZDAnimSequence* LastSequencePlayed)
 {
+	if(!LastSequencePlayed || !GetWorld())
+	{
+		return;
+	}
+
+	FString SequenceName = LastSequencePlayed ? LastSequencePlayed->GetName() : TEXT("None");
+	UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded ->(HasEnded: %s), Sequence: (%s)"), 
+		   bHasEnded ? TEXT("True") : TEXT("False"), *SequenceName);
+	
 	if (bHasEnded)
 	{
-		FString SequenceName = LastSequencePlayed ? LastSequencePlayed->GetName() : TEXT("None");
-		UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyComboHasEnded -> (HasEnded: %s), Sequence: (%s)"), 
-			   bHasEnded ? TEXT("True") : TEXT("False"), *SequenceName);
-
-		SetAnimationState(ECurrentAnimStates::Walking);
+		ResetHitCounter();
 		
-		if (UWorld* World = GetWorld())
+		// Check TimerManager
+		UWorld* World = GetWorld();
+		FTimerManager* TimerMgr = &World->GetTimerManager();
+		if (TimerMgr)
 		{
-			// Check TimerManager
-			FTimerManager* TimerMgr = &World->GetTimerManager();
-			if (TimerMgr)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("TimerManager is valid."));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("TimerManager is nullptr."));
-			}
-			
-			if (ComboCooldownTime > 0.f)
-			{
-				if(!ComboCooldownTimerHandle.IsValid())
-				{
-					UE_LOG(LogTemp, Warning, TEXT("ComboCooldownTimerHandle was not valid before starting the timer."));
-				}
-				StartTimer(ComboCooldownTimerHandle, &UAnimationComboComponent::OnCooldownTimerTimeOut, ComboCooldownTime);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("ComboCooldownTime->%f is not greater than 0"), ComboCooldownTime);
-			}
+			UE_LOG(LogTemp, Warning, TEXT("TimerManager is valid."));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("GetWorld() returned nullptr in OnAnimNotifyComboHasEnded."));
-			return; // Early exit if world context is invalid
+			UE_LOG(LogTemp, Error, TEXT("TimerManager is nullptr."));
 		}
 	}
 }
@@ -291,7 +281,20 @@ void UAnimationComboComponent::OnCooldownTimerTimeOut()
 
 void UAnimationComboComponent::OnSequenceComplete(const UPaperZDAnimSequence* AnimSequence)
 {
-	ResetComboSequence(AnimSequence);
+	if(!AnimSequence)
+	{
+		return;
+	}
+	
+	LastAnimSequenceCompleted = AnimSequence;
+	UE_LOG(LogTemp, Warning, TEXT("OnSequenceComplete->Last AnimSeq(%s)"), *AnimSequence->GetName());
+	if(LastAnimSequenceCompleted == ComboDataAnimSequence)
+	{
+		ResetComboSequence(LastAnimSequenceCompleted);
+	}
+
+	PlayerCharacter2D->OnIsMovementAllowed(true);
+	SetAnimationState(ECurrentAnimStates::Walking);
 }
 
 //---------------------------------
@@ -302,15 +305,16 @@ void UAnimationComboComponent::ResetComboSequence(const UPaperZDAnimSequence* Fr
 	{
 		return;
 	}
-
 	UE_LOG(LogTemp, Warning, TEXT("ResetComboSequence->From(%s)"), *FromAnimSequence->GetName());
-	LastSequenceCompleted = FromAnimSequence;
-	bHasLastComboSequenceCompleted = true;
+	PlayerCharacter2D->OnIsMovementAllowed(true);
 
+	bHasLastComboSequenceCompleted = true;
+	UE_LOG(LogTemp, Warning, TEXT("OnSequenceComplete->Move Allowed after Combo SeqCompleted(%s)"), *ComboDataAnimSequence->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("ResetComboSequence: Last Combat Input(%s)"), *UEnum::GetValueAsString(LastComboInputType));
 	if(LastComboInputType != EComboType::None)
 	{
 		LastComboInputType = EComboType::None;
-		SetAnimationState(ECurrentAnimStates::Walking);
+		
 		UE_LOG(LogTemp, Warning, TEXT("ResetComboSequence->NO Combat Input(%s)"), *UEnum::GetValueAsString(LastComboInputType));
 	}
 	
@@ -318,8 +322,6 @@ void UAnimationComboComponent::ResetComboSequence(const UPaperZDAnimSequence* Fr
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ResetComboSequence->To(%s)"), *ToAnimSequence->GetName());
 	}
-	
-	// TODO:: Think about saving the last Data Asset and the Next Asset for comparison
 }
 
 //---------------------------------
@@ -327,15 +329,17 @@ void UAnimationComboComponent::ResetComboSequence(const UPaperZDAnimSequence* Fr
 void UAnimationComboComponent::OnSequenceChanged(const UPaperZDAnimSequence* From, const UPaperZDAnimSequence* To,
 														float CurrentProgress)
 {
-	if(From && To)
+	if(!From || !To)
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnSequenceChanged->Changed to (%s) is a diffent scene as from(%s)"), *To->GetName(), *From->GetName());
+		return;
 	}
 	
-	if(From != ComboDataAnimSequence)
+	if(From == ComboDataAnimSequence)
 	{
+		UE_LOG(LogTemp, Error, TEXT("OnSequenceChanged-> Combo changed From(%s) To(%s)."), *To->GetName(), *From->GetName());
 		ResetComboSequence(From, To);
 	}
+	
 }
 
 //---------------------------------
@@ -344,11 +348,11 @@ void UAnimationComboComponent::OnComboAttackOverride(bool Completed)
 {
 	if(Completed)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnComboAttackOverride->Success"));
+		UE_LOG(LogTemp, Warning, TEXT("OnComboAttackOverrideCompleted->Success"));
 		bOverrideCompleted = Completed;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OnComboAttackOverride->Failed"));
+		UE_LOG(LogTemp, Warning, TEXT("OnComboAttackOverrideCompleted->Failed"));
 	}
 }

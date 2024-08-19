@@ -62,10 +62,18 @@ protected:
 		ECurrentAnimStates AnimationState = ECurrentAnimStates::Walking;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
-		const UPaperZDAnimSequence* LastSequenceCompleted{};
-	
+		const UPaperZDAnimSequence* LastAnimSequenceCompleted{};
+
+	/* Max Hit Count is the amount of Combo Animations available (3) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
 		int32 HitCounter{0};
+
+	/* Will increase and give multiplier, which gives more Rewards */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
+		int32 ComboCounter{0};
+
+	UPROPERTY(visibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
+		float ComboMultiplier{1.f};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Combo")
 		bool bHasHit{false};
@@ -77,12 +85,7 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Animation|Combo")
 		float HitComboWindowTime{2.0f};
 
-	/* Time in Seconds to Player can not Attack after finishing Last Combo Attack*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Animation|Combo")
-		float ComboCooldownTime{3.0f};
-	
 	FTimerHandle HitComboTimerHandle;
-	FTimerHandle ComboCooldownTimerHandle;
 
 	/* Cache which was our Last Type of Combo. You might want to make adjustments Punch->Kick etc. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category="Animation|Datas")
@@ -101,7 +104,7 @@ protected:
 	FZDOnAnimationOverrideEndSignature OnComboAttackOverrideDelegate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
-		int MaxComboCount{2};
+		int32 MaxComboCount{2};
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Animation|Debug")
 		bool bOverrideCompleted {true};
@@ -150,10 +153,25 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetHasHit() const {return bHasHit;}
+
+	UFUNCTION(BlueprintCallable)
+	void ResetComboCounter(){ ComboCounter = 0;}
+
+	UFUNCTION(BlueprintCallable)
+	void IncreaseComboCount(const int32 Amount) {ComboCounter += FMath::Abs(Amount);}
+
+	UFUNCTION(BlueprintCallable)
+	void DecreaseComboCount(const int32 Amount) {ComboCounter -= FMath::Abs(Amount);};
+
+	UFUNCTION(BlueprintCallable)
+	void ResetHitCounter() {HitCounter = 0;}
+
+	UFUNCTION(BlueprintCallable)
+	void IncreaseHitCounter(const int32 Amount) {HitCounter += FMath::Abs(Amount);}
 	
 	UFUNCTION()
 	void OnHitComboTimerTimeOut();
-
+	
 	UFUNCTION()
 	void OnCooldownTimerTimeOut();
 
