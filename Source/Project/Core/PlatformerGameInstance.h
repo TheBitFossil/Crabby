@@ -39,6 +39,9 @@ struct FPlayerData
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float Credits{0.f};
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		int32 Score{0};
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float MaxStamina{180.f};
 
@@ -61,7 +64,7 @@ struct FPlayerData
 		float MaxDashCoolDown{3.f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		float DashCoolDown{3.f};
+		float DashCoolDown{1.f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float CurrentLevel{1.f};
@@ -77,6 +80,7 @@ struct FPlayerData
 		StaminaDelayed = Stamina;
 
 		DamageTaken = 0.f;
+		Score = 0.f;
 	}
 };
 
