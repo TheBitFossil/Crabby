@@ -25,6 +25,7 @@ void UAnimNotifyStateBase::InitComponents(APlayerCharacter2D* Player) const
 {
 	if(!Player)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("InitComponents->UAnimNotifyStateBase: No Player, aborting Init!"));
 		return;
 	}
 
@@ -32,7 +33,9 @@ void UAnimNotifyStateBase::InitComponents(APlayerCharacter2D* Player) const
 	if(!ComboComponent)
 	{
 		ComboComponent = Player2D->GetComboComponent();
+		UE_LOG(LogTemp, Warning, TEXT("InitComponents->UAnimNotifyStateBase:ComboComp Initialized (%s)"), *ComboComponent.GetName());
 	}
+	UE_LOG(LogTemp, Error, TEXT("InitComponents->UAnimNotifyStateBase:NO COMBO COMPONENT!"));
 }
 
 //---------------------------------
@@ -57,7 +60,11 @@ void UAnimNotifyStateBase::OnNotifyBegin_Implementation(UPaperZDAnimInstance* Ow
 void UAnimNotifyStateBase::OnNotifyEnd_Implementation(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyEnd_Implementation(OwningInstance);
-	
+
+	if (!OwningInstance)
+	{
+		return;
+	}
 	
 }
 
@@ -66,5 +73,9 @@ void UAnimNotifyStateBase::OnNotifyEnd_Implementation(UPaperZDAnimInstance* Owni
 void UAnimNotifyStateBase::OnNotifyAborted(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyAborted(OwningInstance);
-	
+
+	if (!OwningInstance)
+	{
+		return;
+	}
 }

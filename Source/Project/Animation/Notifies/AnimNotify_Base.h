@@ -11,7 +11,7 @@ class UAnimationComboComponent;
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class PROJECT_API UAnimNotify_Base : public UPaperZDAnimNotify
 {
 	GENERATED_BODY()

@@ -20,5 +20,4 @@ protected:
 	virtual void OnReceiveNotify_Implementation(UPaperZDAnimInstance* OwningInstance) const override;
 	virtual void OnNotifyAborted(UPaperZDAnimInstance* OwningInstance) const override;
 	virtual void TickNotify(float DeltaTime, float Playtime, float LastPlaybackTime, UPrimitiveComponent* AnimRenderComponent, bool& bPersistentActiveState, UPaperZDAnimInstance* OwningInstance) const override;
-	
 };

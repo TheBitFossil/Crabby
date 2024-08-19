@@ -22,7 +22,9 @@ void UAnimNotify_Base::InitComponents(APlayerCharacter2D* OwningActor) const
 	if(!ComboComponent)
 	{
 		ComboComponent = Player2D->GetComboComponent();
+		UE_LOG(LogTemp, Warning, TEXT("InitComponents->Init Component by Notify Base Class (%s)"), *ComboComponent.GetName());
 	}
+	UE_LOG(LogTemp, Error, TEXT("InitComponents->NO COMBO COMPONENT!"));
 }
 
 //---------------------------------

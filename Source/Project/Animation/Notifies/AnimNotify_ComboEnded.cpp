@@ -16,14 +16,20 @@ void UAnimNotify_ComboEnded::OnReceiveNotify_Implementation(UPaperZDAnimInstance
 {
 	Super::OnReceiveNotify_Implementation(OwningInstance);
 
-	if(!OwningInstance || !ComboComponent)
+	if(!OwningInstance)
 	{
 		return;
 	}
 
 	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Warning->NO Anim Sequence"));
+		UE_LOG(LogTemp, Error, TEXT("OnReceiveNotify_Implementation->ComboEnded: NO Anim Sequence"));
+		return;
+	}
+
+	if(!ComboComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->OnNotifyAborted: No ComboComponent!"));
 		return;
 	}
 	ComboComponent->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
@@ -34,9 +40,25 @@ void UAnimNotify_ComboEnded::OnReceiveNotify_Implementation(UPaperZDAnimInstance
 void UAnimNotify_ComboEnded::OnNotifyAborted(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyAborted(OwningInstance);
+
+	if(!OwningInstance)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->NO OwningInstance!"));
+		return;
+	}
+
+	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Warning->NO AnimSequence"));
+		return;
+	}
 	
+	if(!ComboComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->OnNotifyAborted: No ComboComponent!"));
+		return;
+	}
 	ComboComponent->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
-	UE_LOG(LogTemp, Error, TEXT("ErrorNumber->ComboComponent, ComboSequenceHasEnded->Aborted"));
 }
 
 //---------------------------------
