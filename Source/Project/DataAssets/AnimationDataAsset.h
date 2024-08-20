@@ -55,8 +55,5 @@ public:
 		FAnimationData Data;
 	
 	UFUNCTION(BlueprintCallable)
-	int GetAnimationCount() const {return Data.AnimationSequences.Num();}
-	
-	UFUNCTION(BlueprintCallable)
-	EAnimationDataType GetAnimationType() const {return Data.AnimationType;}
+		EAnimationDataType GetAnimationType() const {return Data.AnimationType;}
 };
