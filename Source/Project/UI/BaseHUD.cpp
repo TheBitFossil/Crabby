@@ -72,7 +72,7 @@ void ABaseHUD::Tick(float DeltaSeconds)
 void ABaseHUD::OnHealthChanged(const float& HP)
 {
 	UpdateProgressBar(PlayerHudWidget->HealthProgressBarInstant, HP, GameInstance->GetMaxHealth());
-	UE_LOG(LogTemp, Warning, TEXT("OnHealthChanged(%f)"), HP);
+	//UE_LOG(LogTemp, Warning, TEXT("OnHealthChanged(%f)"), HP);
 }
 
 //---------------------------------

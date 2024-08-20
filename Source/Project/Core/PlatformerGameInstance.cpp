@@ -24,7 +24,7 @@ void UPlatformerGameInstance::SetHealth(const float& Val)
 void UPlatformerGameInstance::RemoveHealthInstant(const float& ActualDamage)
 {
 	const float HitPointsLeft = PlayerData.HitPoints - ActualDamage;
-	UE_LOG(LogTemp, Warning, TEXT("GI->Data(%f), Damage(%f), HitPointsLeft(%f)"), PlayerData.HitPoints, ActualDamage, HitPointsLeft);
+	//UE_LOG(LogTemp, Warning, TEXT("GI->Data(%f), Damage(%f), HitPointsLeft(%f)"), PlayerData.HitPoints, ActualDamage, HitPointsLeft);
 	PlayerData.HitPoints = FMath::Clamp(HitPointsLeft, 0, PlayerData.MaxHitPoints);
 		
 	HealthChangedDelegate.Broadcast(PlayerData.HitPoints);
@@ -177,7 +177,7 @@ void UPlatformerGameInstance::OnItemCollected(const ALootItem* ItemCollected, co
 		break;
 	case ECollectableType::Buff:
 		AddStamina(ItemCollected->GetItemData().Stamina);
-		UE_LOG(LogTemp, Warning, TEXT("ItemValue->%f, AttributeName->%d"), ItemCollected->GetItemData().Stamina, ItemCollected->GetItemType());
+		//UE_LOG(LogTemp, Warning, TEXT("ItemValue->%f, AttributeName->%d"), ItemCollected->GetItemData().Stamina, ItemCollected->GetItemType());
 		break;
 	case ECollectableType::Credits:
 		AddCredits(ItemCollected->GetItemData().Credits);

@@ -184,7 +184,6 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 		// Set the Bar to Zero immediately after Dashing
 		GameInstance->ResetDashBar();
 		
-		
 		// Start update of the DashBar
 		GetWorldTimerManager().SetTimer(
 			DashTimerDelegate,
@@ -335,7 +334,7 @@ void APlayerCharacter2D::Landed(const FHitResult& Hit)
 	if(MovementState != EMoveState::Ground)
 	{
 		MovementState = EMoveState::Ground;
-		UE_LOG(LogTemp, Warning, TEXT("Landed->"));
+		//UE_LOG(LogTemp, Warning, TEXT("Landed->"));
 
 		if(AnimationComboComponent->GetAnimationState() == ECurrentAnimStates::Dashing && bIsImmortal)
 		{
@@ -404,7 +403,7 @@ void APlayerCharacter2D::UpdateAttributeTick(float& Last, const float& Current, 
 	const float AmountToRemove = TotalAmount * Percentage;
 
 	// Debug Logging
-	UE_LOG(LogTemp, Log, TEXT("%s Tick -> Percentage(%f), AmountToRemove(%f), LastValue(%f)"), *AttributeName, Percentage, AmountToRemove, Last);
+	//UE_LOG(LogTemp, Log, TEXT("%s Tick -> Percentage(%f), AmountToRemove(%f), LastValue(%f)"), *AttributeName, Percentage, AmountToRemove, Last);
 
 	// Slowly remove the attribute until we reach the current value
 	if(Last > Current)
@@ -416,7 +415,7 @@ void APlayerCharacter2D::UpdateAttributeTick(float& Last, const float& Current, 
 		}
 
 		// Debug logging
-		UE_LOG(LogTemp, Log, TEXT("%s Value Ref Update to(%f)"), *AttributeName, NewValue);
+		//UE_LOG(LogTemp, Log, TEXT("%s Value Ref Update to(%f)"), *AttributeName, NewValue);
 		UpdateRefFunction(NewValue);
 
 		// Set for next Tick
@@ -454,7 +453,7 @@ void APlayerCharacter2D::WallMovement(UCharacterMovementComponent* CharacterMove
 	/* If in range of a WorldStatic and we press forward direction. Change State*/
 	if(WallDetectorFront->HasDetectedActor())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WallMovement->Has Detected"));
+		//UE_LOG(LogTemp, Warning, TEXT("WallMovement->Has Detected"));
 		// Are we pressing in forward direction , which means we are clinging to the wall
 		const float& DistanceToWall = WallDetectorFront->DetectedWallDistance;
 		const bool bHorizontalMovement = (CharacterMovement->GetLastInputVector().X > 0.f || CharacterMovement->GetLastInputVector().X < 0.f);
@@ -544,7 +543,7 @@ float APlayerCharacter2D::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 			false,
 			HealthTickRate
 		);
-		UE_LOG(LogTemp, Warning, TEXT("Starting Delayed Damage TickRate(%f)"), HealthTickRate);
+		//UE_LOG(LogTemp, Warning, TEXT("Starting Delayed Damage TickRate(%f)"), HealthTickRate);
 	}
 	else
 	{
@@ -591,7 +590,6 @@ void APlayerCharacter2D::OnStunTimerTimeOut()
 	bIsStunned = false;
 }
 
-
 //---------------------------------
 /* A Timer that counts to a specific max value. Shows progress on the HUD between 0 and 1 */
 void APlayerCharacter2D::OnDashTimerTimeOut()
@@ -621,7 +619,18 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 void APlayerCharacter2D::OnAnimNotifyDashEnded()
 {
 	// Callback from UAnimNotifyState_Dashing::OnNotifyEnd
-	AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Walking);
+	UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyDashEnded->bCanDash(%s), bIsImmortal(%s)"),
+		bCanDash ? TEXT("True") : TEXT("False"), bIsImmortal ? TEXT("True") : TEXT("False"));
+	// First go to a transitioning State, which plays the End Of the Slide Aimation
+	// After we go back to Walking/Idle
+	AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Transitioning);
+}
+
+//---------------------------------
+
+void APlayerCharacter2D::OnAnimNotifyComboHasEnded(bool bCond, const UPaperZDAnimSequence* PaperZdAnimSequence)
+{
+	AnimationComboComponent->OnAnimNotifyComboHasEnded(true, PaperZdAnimSequence);
 }
 
 //---------------------------------
@@ -679,7 +688,7 @@ void APlayerCharacter2D::OnAttackCollisionBeginOverlap(UPrimitiveComponent* Over
 			
 			float Dmg = AnimationComboComponent->GetAttackDamage();
 
-			UE_LOG(LogTemp, Warning, TEXT("Attack damage->%f"), Dmg);
+			//UE_LOG(LogTemp, Warning, TEXT("Attack damage->%f"), Dmg);
 			Enemy->TakeDamage(
 				Dmg,
 				PointDamageEvent,

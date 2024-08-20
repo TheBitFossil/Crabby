@@ -7,7 +7,6 @@
 #include "Project/Interfaces/ICollectable.h"
 #include "LootItem.generated.h"
 
-class UPlatformerGameInstance;
 class UPaperFlipbookComponent;
 class UCapsuleComponent;
 

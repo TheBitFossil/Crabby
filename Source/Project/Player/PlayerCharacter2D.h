@@ -130,10 +130,10 @@ protected:
 		float WallHangDistance {22.f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Movement", meta=(ClampMin = "0.1", ClampMax = "4"))
-		float CustomGravityScale {2.f};
+		float CustomGravityScale {1.8f};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|WallJump", meta=(ClampMin = "0.1", ClampMax = "4"))
-		float WallJumpGravityScale {.35f};
+		float WallJumpGravityScale {.28f};
 
 	UPROPERTY(VisibleAnywhere, Category="Gameplay|Movement")
 		FVector LastJumpLocation{FVector::Zero()};
@@ -193,7 +193,7 @@ public:
 	                         AController* EventInstigator, AActor* DamageCauser) override;
 	
 	void OnAnimNotifyDashEnded();
-
+	void OnAnimNotifyComboHasEnded(bool bCond, const UPaperZDAnimSequence* PaperZdAnimSequence);
 	void OnIsMovementAllowed(const bool bIsActive);
 	
 private:

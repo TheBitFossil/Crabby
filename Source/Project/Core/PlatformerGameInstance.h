@@ -61,10 +61,10 @@ struct FPlayerData
 		float LastStamina{};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		float MaxDashCoolDown{3.f};
+		float MaxDashCoolDown{2.25f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		float DashCoolDown{1.f};
+		float DashCoolDown{2.25f};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float CurrentLevel{1.f};
