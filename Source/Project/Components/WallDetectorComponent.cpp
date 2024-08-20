@@ -41,7 +41,7 @@ void UWallDetectorComponent::DetectWall()
 	const FVector OffsetForward = GetOwner()->GetActorForwardVector() * OffsetDistance;
 	const FVector StartLocation = GetOwner()->GetActorLocation() + OffsetForward;
 	const FVector End = StartLocation + GetOwner()->GetActorForwardVector() * TraceDistance;
-	DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
+	//DrawDebugLine(GetWorld(), StartLocation, End, FColor::Green, false, .2f);
 	
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());      
@@ -51,8 +51,8 @@ void UWallDetectorComponent::DetectWall()
 	{
 		for (const FHitResult& Hit : HitResults)
 		{
-			DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
-				FColor::Red, false, 1.f);
+			//DrawDebugLine(GetWorld(), StartLocation, Hit.ImpactPoint,
+				//FColor::Red, false, 1.f);
 
 			if(Hit.GetComponent()->GetCollisionObjectType() == ECC_WorldStatic)
 			{

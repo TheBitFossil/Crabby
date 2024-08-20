@@ -59,6 +59,14 @@ private:
 
 	FTimerHandle AttackCooldownTimer;
 
+	/* Keep this Value less or equal than the Stopping Distance */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float AttackHorizontalThreshold{80.f};
+
+	/* If the distance to the Target exceeds this Value, the Enemy will try to Jump. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
+		float AttackVerticalThreshold{20.f};
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Attack, meta=(AllowPrivateAccess = "true"))
 		float AttackCooldownTime{1.f};
 
@@ -74,7 +82,7 @@ private:
 	/* If Player is further than JumpThreshold vertically. Jump  */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		float JumpThreshold{10.f};
-
+	
 	/* Add Impulse after Jumping to help the AI traverse forward */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay, meta=(AllowPrivateAccess = "true"))
 		FVector JumpImpulse{100.f};

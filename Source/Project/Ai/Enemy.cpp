@@ -238,34 +238,35 @@ void AEnemy::Tick(float DeltaTime)
 	{
 		if(bIsMovementAllowed && StoppingDistance < GetHorizontalDistanceTo(PlayerTarget))
 		{
-			MoveHorizontalTo(PlayerTarget);
+			const float HorizontalDistance = GetHorizontalDistanceTo(PlayerTarget);
+			const float VerticalDistance = GetVerticalDistanceTo(PlayerTarget);
 
-			if(GetVerticalDistanceTo(PlayerTarget) > JumpThreshold)
+			bool bIsCloseEnoughHorizontalToAttack = HorizontalDistance <= AttackHorizontalThreshold;
+			bool bIsCloseEnoughVerticalToAttack = VerticalDistance <= AttackVerticalThreshold;
+			
+			if(bIsCloseEnoughHorizontalToAttack && bIsCloseEnoughVerticalToAttack)
 			{
-				// The player must have jumped. Get the location and do the same
-				if(PlayerTarget->GetLastJumpLocation() != FVector::Zero() && GetCharacterMovement()->IsMovingOnGround())
-				{
-					if(FVector::Dist(GetActorLocation(), PlayerTarget->GetLastJumpLocation()) <= 10.f)
-					{
-						JumpWithImpulse();
-					}
-				}
-			}
-		}
-		else
-		{
-			if(GetVerticalDistanceTo(PlayerTarget) < StoppingDistance)
-			{
-				if(PlayerTarget->bIsAlive)
+				if(PlayerTarget && PlayerTarget->bIsAlive)
 				{
 					Attack();
+				}
+			}
+			else
+			{
+				if(HorizontalDistance > AttackHorizontalThreshold)
+				{
+					MoveHorizontalTo(PlayerTarget);
+				}
+
+				if(VerticalDistance > JumpThreshold && GetCharacterMovement()->IsMovingOnGround())
+				{
+					JumpWithImpulse();
 				}
 			}
 		}
 		
 		UpdateDirection(PlayerTarget);
 	}
-	
 }
 
 //---------------------------------
