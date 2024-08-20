@@ -134,7 +134,7 @@ void AEnemy::OnAttackCollisionOverlapBegin(UPrimitiveComponent* OverlappedCompon
 	if(OtherActor && OtherActor != this)
 	{
 		APlayerCharacter2D* Player = Cast<APlayerCharacter2D>(OtherActor);
-		if(Player->bIsAlive)
+		if(Player && Player->bIsAlive)
 		{
 			FHitResult HitResult;
 			FPointDamageEvent PointDamageEvent;
