@@ -139,6 +139,25 @@ void APlayerCharacter2D::Run(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
+void APlayerCharacter2D::RemoveGravity(const bool bEnabled) const
+{
+	if(!CMC)
+	{
+		return;
+	}
+	
+	if(bEnabled)
+	{
+		CMC->GravityScale = 0.0f;
+	}
+	else
+	{
+		ToggleGravity(true);
+	}
+}
+
+//---------------------------------
+
 void APlayerCharacter2D::RemoveStamina(const float StaminaCost)
 {
 	// Update Instant Stamina Bar
@@ -163,6 +182,11 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	{
 		return;
 	}
+
+	if (MovementState == EMoveState::Wall)
+	{
+		return;
+	}
 	
 	// Directly update PlayerData struct inside GameInstance 
 	GameInstance->GetLastStaminaRef() = GameInstance->GetStamina();
@@ -170,17 +194,39 @@ void APlayerCharacter2D::Dash(const FInputActionValue& InputActionValue)
 	if(GameInstance->GetStamina() > StaminaCostDash)
 	{
 		RemoveStamina(StaminaCostDash);
+
 		AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Dashing);
-		
 		bCanDash = false;
+
+		// Normalizing, we only want a direction
+		const FVector DashDirection = GetActorForwardVector().GetSafeNormal();
+
+		// Prevent Gravity during Dash to slow us down
+		RemoveGravity(true);
+
+		// Prevent Taking Damage
 		bIsImmortal = true;
+
+		// Cache current Velocity for Downward movement
+		const FVector CurrentVelocity = GetVelocity();
+
+		// Remove any Velocity, in Forward direction
+		FVector ClearedVelocity = CurrentVelocity - FVector::DotProduct(CurrentVelocity, DashDirection) * DashDirection;
 		
-		const FVector DashDirection = GetActorForwardVector();
+		CMC->Velocity = ClearedVelocity;
+		
+		// Calculate our Velocity during Dash
+		FVector NewVelocity = DashDirection * DashForce;
+		
+		// Preserve vertical velocity only if the character is not grounded
 		if(CMC->IsMovingOnGround())
 		{
-			LaunchCharacter(DashDirection * DashForce, true, true);
+			NewVelocity.Z = CurrentVelocity.Z; 
 		}
 
+		// Actual Dashing
+		LaunchCharacter(NewVelocity, true, true);
+		
 		// Set the Bar to Zero immediately after Dashing
 		GameInstance->ResetDashBar();
 		
@@ -308,14 +354,14 @@ void APlayerCharacter2D::Aim(const FInputActionValue& InputActionValue)
 
 //---------------------------------
 
-void APlayerCharacter2D::ToggleGravity(const bool Enabled) const
+void APlayerCharacter2D::ToggleGravity(const bool bEnabled) const
 {
 	if(!CMC)
 	{
 		return;
 	}
 	
-	if(Enabled)
+	if(bEnabled)
 	{
 		CMC->GravityScale = CustomGravityScale;
 	}
@@ -352,12 +398,13 @@ void APlayerCharacter2D::WallJump()
 		return;
 	}
 
-	const FVector DirNormal = (-GetActorForwardVector() + GetActorUpVector()).GetSafeNormal();
-	const FVector JumpDirection = DirNormal * WallJumpForce;
+	const FVector UpwardForce = GetActorUpVector().GetSafeNormal() * WallJumpForceUpwards;		// Get some distance upwards
+	const FVector BackwardForce = -GetActorForwardVector() * WallJumpForceBackwards;			// Get some distance from the Wall
 
+	const FVector WallJumpDirection = UpwardForce + BackwardForce;
 	ToggleGravity(false);
 	
-	LaunchCharacter(JumpDirection, true, true);	// Get some distance from the Wall
+	LaunchCharacter(WallJumpDirection, true, true);	
 	
 	GetWorldTimerManager().SetTimer(
 		WallJumpTimerDelegate,
@@ -619,10 +666,13 @@ void APlayerCharacter2D::OnDashTimerTimeOut()
 void APlayerCharacter2D::OnAnimNotifyDashEnded()
 {
 	// Callback from UAnimNotifyState_Dashing::OnNotifyEnd
-	UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyDashEnded->bCanDash(%s), bIsImmortal(%s)"),
-		bCanDash ? TEXT("True") : TEXT("False"), bIsImmortal ? TEXT("True") : TEXT("False"));
-	// First go to a transitioning State, which plays the End Of the Slide Aimation
-	// After we go back to Walking/Idle
+	//UE_LOG(LogTemp, Warning, TEXT("OnAnimNotifyDashEnded->bCanDash(%s), bIsImmortal(%s)"),
+		//bCanDash ? TEXT("True") : TEXT("False"), bIsImmortal ? TEXT("True") : TEXT("False"));
+	
+	// We need to turn on Gravity
+	RemoveGravity(false);
+	
+	// Go to a transitioning State, which plays the "End Of the Slide" Anim
 	AnimationComboComponent->SetAnimationState(ECurrentAnimStates::Transitioning);
 }
 

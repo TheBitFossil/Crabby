@@ -155,6 +155,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Inventory)
 		bool bEquippedSlot01 {false};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Wall")
+		float WallJumpForceUpwards{700.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay|Wall")
+		float WallJumpForceBackwards{500.f};
+
 public:
 	UFUNCTION(BlueprintCallable)
 	UAnimationComboComponent* GetComboComponent() const {return AnimationComboComponent;}
@@ -255,6 +261,6 @@ public:
 	
 private:
 	void WallMovement(UCharacterMovementComponent* CharacterMovement);
-	void ToggleGravity(const bool Enabled) const;
-	
+	void ToggleGravity(const bool bEnabled) const;
+	void RemoveGravity(const bool bEnabled) const;
 }; 
