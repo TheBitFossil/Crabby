@@ -22,16 +22,16 @@ void UAnimNotify_DashEnded::OnReceiveNotify_Implementation(UPaperZDAnimInstance*
 
 	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_DashEnded->NO AnimSequence"));
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_DashEnded::OnReceiveNotify->NO AnimSequence"));
 		return;
 	}
 	
 	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
 		OwningActor->OnAnimNotifyDashEnded();
+		return;
 	}
-	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_DashEnded->NO Owning Actor!"));
-	
+	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_DashEnded::OnReceiveNotify->NO Owning Actor!"));
 }
 
 //---------------------------------
@@ -39,6 +39,23 @@ void UAnimNotify_DashEnded::OnReceiveNotify_Implementation(UPaperZDAnimInstance*
 void UAnimNotify_DashEnded::OnNotifyAborted(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyAborted(OwningInstance);
+	if(!OwningInstance)
+	{
+		return;
+	}
+
+	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_DashEnded::OnNotifyAborted->NO AnimSequence"));
+		return;
+	}
+	
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
+	{
+		OwningActor->OnAnimNotifyDashEnded();
+		return;
+	}
+	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_DashEnded::OnNotifyAborted->NO Owning Actor!"));
 }
 
 //---------------------------------

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "AnimSequences/Players/PaperZDAnimationPlaybackData.h"
 #include "Project/Player/PlayerCharacter2D.h"
 #include "AnimationComboComponent.generated.h"
 
@@ -21,7 +20,8 @@ enum class ECurrentAnimStates : uint8
 	Shooting		UMETA(DisplayName="Shooting"),
 	Crouched 		UMETA(DisplayName="Crouched"),
 	GettingHit 		UMETA(DisplayName="GettingHit"),
-	Rolling 		UMETA(DisplayName="Rolling")
+	Rolling 		UMETA(DisplayName="Rolling"),
+	Transitioning	UMETA(DisplayName="Transitioning")
 };
 
 UENUM(BlueprintType)
@@ -122,7 +122,7 @@ protected:
 		float Time{};
 
 	virtual void BeginPlay() override;
-
+	
 	UFUNCTION()
 	void OnSequenceComplete(const UPaperZDAnimSequence* AnimSequence);
 	void ResetComboSequence(const UPaperZDAnimSequence* FromAnimSequence, const UPaperZDAnimSequence* ToAnimSequence=nullptr);
@@ -133,6 +133,7 @@ protected:
 	UFUNCTION()
 	void OnComboAttackOverride(bool Completed);
 
+	void StartAttackCombo(const EComboType& InputAttackType);
 	void CalculateAttackDamage(const float InDamage);
 	void CalculateAttackCost(const float InCost);
 
@@ -142,7 +143,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RequestAttackCombo(const EComboType& InputAttackType);
-	void StartAttackCombo(const EComboType& InputAttackType);
 
 	/* Called only from the Player when he has Hit a target. */
 	void StartTimer(FTimerHandle& TimerHandle, void (UAnimationComboComponent::*TimerCallBack)(), float TimerDuration);

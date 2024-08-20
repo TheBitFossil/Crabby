@@ -287,14 +287,22 @@ void UAnimationComboComponent::OnSequenceComplete(const UPaperZDAnimSequence* An
 	}
 	
 	LastAnimSequenceCompleted = AnimSequence;
-	UE_LOG(LogTemp, Warning, TEXT("OnSequenceComplete->Last AnimSeq(%s)"), *AnimSequence->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("UAnimationComboComponent::OnSequenceComplete->LastAnimSeq(%s)"), *LastAnimSequenceCompleted->GetName());
+	
 	if(LastAnimSequenceCompleted == ComboDataAnimSequence)
 	{
 		ResetComboSequence(LastAnimSequenceCompleted);
 	}
-
-	PlayerCharacter2D->OnIsMovementAllowed(true);
-	SetAnimationState(ECurrentAnimStates::Walking);
+	if(GetAnimationState() != ECurrentAnimStates::Transitioning)
+	{
+		PlayerCharacter2D->OnIsMovementAllowed(true);
+		SetAnimationState(ECurrentAnimStates::Walking);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UAnimationComboComponent::OnSequenceComplete->Transitioning from (%s)"),
+			*LastAnimSequenceCompleted->GetName());
+	}
 }
 
 //---------------------------------
