@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AnimNotify_Base.h"
+#include "PaperZDAnimNotify.h"
 #include "AnimNotify_ComboEnded.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_API UAnimNotify_ComboEnded : public UAnimNotify_Base
+class PROJECT_API UAnimNotify_ComboEnded : public UPaperZDAnimNotify
 {
 	GENERATED_BODY()
 public:

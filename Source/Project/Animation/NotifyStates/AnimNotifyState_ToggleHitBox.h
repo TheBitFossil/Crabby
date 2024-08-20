@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AnimNotifyStateBase.h"
+#include "PaperZDAnimNotifyState.h"
 #include "AnimNotifyState_ToggleHitBox.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_API UAnimNotifyPlayerAttack : public UAnimNotifyStateBase
+class PROJECT_API UAnimNotifyPlayerAttack : public UPaperZDAnimNotifyState
 {
 	GENERATED_BODY()
 

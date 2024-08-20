@@ -19,12 +19,21 @@ void UAnimNotifyPlayerAttack::OnNotifyBegin_Implementation(UPaperZDAnimInstance*
 {
 	Super::OnNotifyBegin_Implementation(OwningInstance);
 
-	if(!OwningInstance || !Player2D)
+	if(!OwningInstance)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotifyPlayerAttack->OnNotifyBegin_Implementation: No OwningInstance!"));
 		return;
 	}
-		
-	Player2D->ToggleAttackCollisionBox(true);
+
+	// TODO:: Make a base class, if you want to call the same notifies for different classes
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
+	{
+		OwningActor->ToggleAttackCollisionBox(true);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UAnimNotifyPlayerAttack->OnNotifyBegin_Implementation:NO Owning Actor!"));
+	}
 }
 
 //---------------------------------
@@ -32,11 +41,21 @@ void UAnimNotifyPlayerAttack::OnNotifyBegin_Implementation(UPaperZDAnimInstance*
 void UAnimNotifyPlayerAttack::OnNotifyEnd_Implementation(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyEnd_Implementation(OwningInstance);
-	if(!OwningInstance || !Player2D)
+	
+	if(!OwningInstance)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotifyPlayerAttack->OnNotifyEnd_Implementation: No OwningInstance!"));
 		return;
 	}
-	Player2D->ToggleAttackCollisionBox(false);
+
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
+	{
+		OwningActor->ToggleAttackCollisionBox(false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UAnimNotifyPlayerAttack->OnNotifyEnd_Implementation:NO Owning Actor!"));
+	}
 }
 
 //---------------------------------
@@ -47,16 +66,16 @@ void UAnimNotifyPlayerAttack::OnNotifyAborted(UPaperZDAnimInstance* OwningInstan
 
 	if(!OwningInstance)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owning Instance is nullptr in OnNotifyAborted"));
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotifyPlayerAttack->OnNotifyAborted: No OwningInstance!"));
 		return;
 	}
 
-	if(!Player2D)
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
-		UE_LOG(LogTemp, Error,
-			TEXT("Failed to retrieve Player2D from BaseNotifyState in OnNotifyAborted."));
-		return;
+		OwningActor->ToggleAttackCollisionBox(false);
 	}
-
-	Player2D->ToggleAttackCollisionBox(false);
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("UAnimNotifyPlayerAttack->OnNotifyAborted:NO Owning Actor!"));
+	}
 }

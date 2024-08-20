@@ -3,8 +3,9 @@
 
 #include "AnimNotify_ComboEnded.h"
 
+#include "PaperZDAnimInstance.h"
 #include "AnimSequences/Players/PaperZDAnimPlayer.h"
-#include "Project/Components/AnimationComboComponent.h"
+#include "Project/Player/PlayerCharacter2D.h"
 
 UAnimNotify_ComboEnded::UAnimNotify_ComboEnded()
 {
@@ -23,16 +24,17 @@ void UAnimNotify_ComboEnded::OnReceiveNotify_Implementation(UPaperZDAnimInstance
 
 	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnReceiveNotify_Implementation->ComboEnded: NO Anim Sequence"));
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_ComboEnded->NO AnimSequence"));
 		return;
 	}
 
-	if(!ComboComponent)
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->OnNotifyAborted: No ComboComponent!"));
+		OwningActor->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
 		return;
 	}
-	ComboComponent->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
+	
+	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->NO Owning Actor!"));
 }
 
 //---------------------------------
@@ -49,16 +51,15 @@ void UAnimNotify_ComboEnded::OnNotifyAborted(UPaperZDAnimInstance* OwningInstanc
 
 	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Warning->NO AnimSequence"));
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_ComboEnded->NO AnimSequence"));
 		return;
 	}
 	
-	if(!ComboComponent)
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->OnNotifyAborted: No ComboComponent!"));
-		return;
+		OwningActor->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
 	}
-	ComboComponent->OnAnimNotifyComboHasEnded(true, OwningInstance->GetPlayer()->GetCurrentAnimSequence());
+	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_ComboEnded->NO Owning Actor!"));
 }
 
 //---------------------------------

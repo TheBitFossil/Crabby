@@ -2,8 +2,9 @@
 
 
 #include "AnimNotify_StopMovement.h"
-
+#include "AnimSequences/Players/PaperZDAnimPlayer.h"
 #include "Project/Player/PlayerCharacter2D.h"
+
 UAnimNotify_StopMovement::UAnimNotify_StopMovement()
 {
 }
@@ -14,7 +15,22 @@ void UAnimNotify_StopMovement::OnReceiveNotify_Implementation(UPaperZDAnimInstan
 {
 	Super::OnReceiveNotify_Implementation(OwningInstance);
 
-	Player2D->OnIsMovementAllowed(false);
+	if(!OwningInstance)
+	{
+		return;
+	}
+
+	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_StopMovement->NO AnimSequence"));
+		return;
+	}
+	
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
+	{
+		OwningActor->OnIsMovementAllowed(false);
+	}
+	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_StopMovement->NO Owning Actor!"));
 }
 
 //---------------------------------
@@ -22,6 +38,23 @@ void UAnimNotify_StopMovement::OnReceiveNotify_Implementation(UPaperZDAnimInstan
 void UAnimNotify_StopMovement::OnNotifyAborted(UPaperZDAnimInstance* OwningInstance) const
 {
 	Super::OnNotifyAborted(OwningInstance);
+	
+	if(!OwningInstance)
+	{
+		return;
+	}
+
+	if(!OwningInstance->GetPlayer()->GetCurrentAnimSequence())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UAnimNotify_StopMovement->NO AnimSequence"));
+		return;
+	}
+	
+	if(APlayerCharacter2D* OwningActor = Cast<APlayerCharacter2D>(OwningInstance->GetOwningActor()))
+	{
+		OwningActor->OnIsMovementAllowed(false);
+	}
+	UE_LOG(LogTemp, Error, TEXT("UAnimNotify_StopMovement->NO Owning Actor!"));
 }
 
 //---------------------------------
